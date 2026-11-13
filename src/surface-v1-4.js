@@ -251,6 +251,7 @@
 
   WORLD.build = function (missionId = 'dam') {
     if (missionId !== MISSION) {
+      this.surface1 = null; // evita atualizar neve/antena de uma fase já descarregada
       const result = originalBuild.call(this, missionId);
       this.scene.background = new THREE.Color(0x64748b);
       this.scene.fog = new THREE.FogExp2(0x64748b, 0.0085);
