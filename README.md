@@ -4,12 +4,13 @@ Protótipo de FPS de espionagem para navegador. Contém **três missões**: Dam,
 
 ## Jogar pelo GitHub Pages
 
-1. Abra **Settings → Pages** neste repositório.
-2. Em **Build and deployment**, escolha **Source: GitHub Actions**.
-3. O workflow `Publicar protótipo no GitHub Pages` já está em `.github/workflows/pages.yml`. Se necessário, acesse **Actions** e execute-o com **Run workflow**.
-4. Após a implantação aparecer como concluída, acesse a URL apresentada em Pages. A URL esperada é `https://jogoiarexx-blip.github.io/goldeneye-077/` (não foi possível verificar se já está ativa).
+**Site:** https://jogoiarexx-blip.github.io/goldeneye-077/
 
-O jogo usa arquivos `index.html` e `src/*.js`, hospedados estaticamente. Depende da conexão à internet para Three.js, Tailwind e fontes externas.
+O repositório está configurado para publicar automaticamente da branch `main`, pasta `/(root)`, pelo processo nativo **pages build and deployment** do GitHub. O `index.html` está na raiz; os arquivos de jogo ficam em `src/`. A pasta `docs/` contém o GDD.
+
+Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy from a branch**, **Branch: main**, **Folder: /(root)**. Veja o status em **Actions → pages build and deployment**. A página `404.html` oferece uma rota de volta para o jogo quando um endereço interno antigo é acessado.
+
+O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
 
 ## Controles
 
