@@ -155,6 +155,8 @@
       view.style.cssText = 'position:fixed;bottom:94px;left:50%;transform:translateX(-50%);max-width:min(75vw,460px);min-width:210px;text-align:center;padding:8px 12px;border-radius:10px;background:rgba(7,11,16,.78);border:1px solid rgba(56,189,248,.32);font:600 11px/1.5 ui-monospace,monospace;color:#cbd5e1;pointer-events:none;text-shadow:0 1px 2px #000;';
       document.getElementById('screen-hud').appendChild(view);
     }
+    if (gameInstance.guideEnabled === false) { view.style.display = 'none'; return; }
+    view.style.display = '';
     const objective = gameInstance.objectives.find(o => !o.completed);
     if (!objective) { view.textContent = 'DIRETIVAS CONCLUÍDAS'; return; }
     const target = guideTarget(gameInstance, objective.id);
@@ -211,4 +213,13 @@
       }
     }
   };
+
+  // [H] permite ocultar ou exibir a orientação sem interromper a missão.
+  if (typeof window !== 'undefined') window.addEventListener('keydown', (event) => {
+    const running = window.gameInstance;
+    if (event.code !== 'KeyH' || event.repeat || !running || running.appState !== 'PLAYING') return;
+    running.guideEnabled = running.guideEnabled === false;
+    updateGuide(running);
+    running.notifyHUD(running.guideEnabled ? 'GUIA DE OBJETIVOS ATIVADO' : 'GUIA DE OBJETIVOS DESATIVADO');
+  });
 })();
