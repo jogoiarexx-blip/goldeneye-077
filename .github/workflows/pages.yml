@@ -30,7 +30,14 @@ jobs:
           mkdir -p public/src
           cp index.html public/index.html
           cp src/*.js public/src/
+          cp 404.html public/404.html
           touch public/.nojekyll
+          test -s public/index.html
+          test -s public/src/game.js
+          test -s public/src/guards.js
+          test -s public/src/world.js
+          test -s public/src/missions.js
+          test -s public/src/audio.js
       - name: Enviar artefato
         uses: actions/upload-pages-artifact@v3
         with:
