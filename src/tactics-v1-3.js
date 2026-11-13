@@ -98,7 +98,20 @@
 
     if (this.tacticalCoverRequest && this.state === 'ALERTED') {
       this.tacticalCoverRequest = false;
-      const target = chooseCover(this, playerPos, blocks);
+      let target = chooseCover(this, playerPos, blocks);
+      // Sem abrigo alcançável, um desvio curto evita guardas imóveis em campo aberto.
+      if (!target) {
+        const dx = playerPos.x - this.pos.x, dz = playerPos.z - this.pos.z;
+        const len = Math.hypot(dx, dz);
+        if (len > 0.1) {
+          const side = ((this.searchVariant || 0) % 2 ? 1 : -1);
+          const candidate = new THREE.Vector3(this.pos.x + side * dz / len * 1.5,
+            this.pos.y, this.pos.z - side * dx / len * 1.5);
+          if (walkable(candidate.x, candidate.z, blocks) && pathClear(this.pos, candidate, blocks)) {
+            target = candidate;
+          }
+        }
+      }
       if (target) {
         this.tacticalCoverTarget = target;
         this.tacticalCoverTimer = 5.5;
@@ -193,6 +206,30 @@
   GAME.update = function (dt) {
     oldUpdate.call(this, dt);
     const level = this.levelBuilder;
+    if (this.appState === 'PLAYING') {
+      // Descoberta local de corpos. Guardas precisam estar próximos e ter visão real;
+      // não transmite automaticamente alerta para todos os inimigos.
+      this.v13CorpseScan = (this.v13CorpseScan || 0) + dt;
+      if (this.v13CorpseScan >= 0.7) {
+        this.v13CorpseScan = 0;
+        for (const fallen of this.guards) {
+          if (fallen.state !== 'DEAD' || fallen.v13Discovered) continue;
+          const witness = this.guards.find(other =>
+            other !== fallen && other.state === 'PATROL' &&
+            other.pos.distanceTo(fallen.pos) < 8.5 &&
+            hasLineOfSight(
+              new THREE.Vector3(other.pos.x, 1.45, other.pos.z),
+              new THREE.Vector3(fallen.pos.x, 0.65, fallen.pos.z),
+              level.colliders
+            )
+          );
+          if (witness) {
+            fallen.v13Discovered = true;
+            witness.hearNoise(fallen.pos, 9);
+          }
+        }
+      }
+    }
     if (this.appState === 'PLAYING' && this.currentMissionId === 'facility') {
       for (const { gate, entry, indicator } of (this.v13GateDisplays || [])) {
         const doak = level.interactables.find(i => i.id === 'contact_doak');
