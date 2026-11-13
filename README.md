@@ -12,9 +12,19 @@ Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy 
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
 
+## Melhorias de fases — v1.2
+
+- **Dam:** a interceptação do backup agora exige instalar o modem no terminal primeiro.
+- **Facility:** alarmes visuais de emergência e reação de proteção dos cientistas após a primeira sabotagem de tanque.
+- **Runway:** tanque com colisão mais larga, saída com objetivos pendentes sem desembarque forçado, e fumaça temporária nas defesas destruídas.
+- **Três missões:** guardas respeitam obstáculos físicos; orientação contextual apresenta objetivo, direção e distância. Pressione **H** para mostrar/ocultar.
+- Arquivos: `src/mission-enhancements.js` contém essas melhorias, carregadas após `src/game.js`.
+
+**Validação:** sintaxe verificada no Node.js e sete testes locais de regressão nos comportamentos principais. Estes testes não substituem QA visual de todas as rotas em navegadores com WebGL.
+
 ## Controles
 
-Teclado/mouse: WASD mover, mouse mirar, clique esquerdo atirar, direito zoom, E interagir, R recarregar, Ctrl agachar, G plantar mina, F detonar, 1–3 trocar arma, Esc/Tab pausar.
+Teclado/mouse: WASD mover, mouse mirar, clique esquerdo atirar, direito zoom, E interagir, R recarregar, Ctrl agachar, G plantar mina, F detonar, 1–3 trocar arma, Esc/Tab pausar, H mostrar/ocultar guia de objetivos.
 
 Gamepad padrão: analógicos para mover/mirar, RT/R2 disparar, LT/L2 zoom, X/Quadrado interagir, Y/Triângulo recarregar, B/Círculo agachar, LB/L1 plantar, RB/R1 detonar, Menu/Options pausa.
 
