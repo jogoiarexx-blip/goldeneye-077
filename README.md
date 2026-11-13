@@ -1,6 +1,6 @@
 # GoldenEye 007 Remastered — protótipo não oficial
 
-Protótipo de FPS de espionagem para navegador. Contém **três missões**: Dam, Facility e Runway. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
+Protótipo de FPS de espionagem para navegador. Contém **quatro missões**: Dam, Facility, Runway e Surface 1 (desbloqueada após concluir Runway). O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
 
 ## Jogar pelo GitHub Pages
 
@@ -11,6 +11,19 @@ O repositório está configurado para publicar automaticamente da branch `main`,
 Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy from a branch**, **Branch: main**, **Folder: /(root)**. Veja o status em **Actions → pages build and deployment**. A página `404.html` oferece uma rota de volta para o jogo quando um endereço interno antigo é acessado.
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
+
+## Missão 04 — Surface 1 (v1.4)
+
+Novo setor jogável de Severnaya baseado no GDD: cenário nevado amplo com trilhas laterais, três instalações principais, montanhas, antena de rádio, patrulhas, neve procedural leve e entrada de ventilação.
+
+- **AGENT (2 objetivos):** cortar as comunicações e entrar pela ventilação.
+- **SECRET AGENT (3 objetivos):** cortar comunicações, recuperar planos no cofre e sair pela ventilação. É obrigatório encontrar a chave para abrir o cofre, mesmo quando isso não é uma diretiva separada.
+- **00 AGENT (4 objetivos):** desligar antena, obter a chave, recuperar planos e acessar a ventilação.
+- A **chave** está na cabana leste; o **painel de rádio** fica na instalação oeste; o **cofre** fica no edifício mais ao norte; a **saída** é uma torre de ventilação no extremo norte.
+- A conclusão de Runway libera Surface 1 nesta sessão e salva o desbloqueio em `localStorage` quando disponível; a próxima fase, Bunker 1, ainda não está implementada.
+- Arquivo: `src/surface-v1-4.js`, carregado depois dos demais módulos. O teste `node tests/check.cjs` inclui verificações de integração e sintaxe dessa fase.
+
+**Limitações:** geometria e cutscenes são protótipos procedurais inspirados no GDD; ainda é preciso testar percursos completos e desempenho em navegadores com WebGL. Não há assets extraídos do jogo original.
 
 ## Melhorias de fases — v1.3
 
