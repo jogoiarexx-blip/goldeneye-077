@@ -12,6 +12,16 @@ Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy 
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
 
+## Melhorias de fases — v1.3
+
+- **IA dos guardas:** busca pela última posição observada após perda de visão, tentativa de cobertura quando atingidos, desvio tático em áreas abertas e reação local à descoberta de guardas abatidos. A detecção respeita colisão e linha de visão, sem informar a posição atual do jogador através das paredes.
+- **Facility:** sinalização adicional de portas com código de cores (vermelho = acesso restrito, amarelo = pronto para abrir, azul = abrindo, verde = aberto); interação prioriza o dispositivo mais próximo e a porta final se abre durante a sequência de fuga.
+- **Runway:** decolagem com progressão de altitude e câmera externa suavizada, hélices aceleradas e poeira leve de pista durante a saída.
+- **Dam:** continua com a sequência de modem → interceptação e melhorias de colisão/objetivos da versão anterior.
+- **Qualidade:** `src/tactics-v1-3.js` é carregado depois de `src/mission-enhancements.js`; `node tests/check.cjs` verifica sintaxe dos scripts, ordem de carregamento e presença dos elementos principais. O workflow `Verificar código do jogo` executa essas verificações sem assumir a publicação.
+
+**Limitação:** os testes automatizados e os testes com simulações não substituem sessões completas de QA visual nas três fases. IA de cobertura e extração cinematográfica são aprimoramentos deste protótipo, não reconstruções validadas quadro a quadro do N64.
+
 ## Melhorias de fases — v1.2
 
 - **Dam:** a interceptação do backup agora exige instalar o modem no terminal primeiro.
