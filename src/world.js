@@ -1013,8 +1013,10 @@
         this.levelGroup.add(ventFan);
         this.animatedProps.push({ type: 'propeller', mesh: ventFan });
 
-        // Parede separando vestiário/banheiros com passagem à esquerda
-        this.addBox(4.5, 2.1, 26, 26, 4.2, 0.5, matTile, true);
+        // Abertura central real permite sair do duto para os banheiros.
+        // Antes uma parede inteira bloqueava a única passagem inicial da Facility.
+        this.addBox(-11.0, 2.1, 26, 14, 4.2, 0.5, matTile, true);
+        this.addBox(11.0, 2.1, 26, 14, 4.2, 0.5, matTile, true);
         // Cabines clássicas do banheiro (Z = +20) com portas de madeira escura
         [-12, -8.5, -5.0, -1.5].forEach(cx => {
           this.addBox(cx, 1.5, 21, 0.25, 3.0, 3.2, matTile, true);
