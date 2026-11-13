@@ -21,7 +21,7 @@ for (const rel of scripts) {
 }
 const missions = fs.readFileSync(path.join(root, 'src/missions.js'), 'utf8');
 for (const mission of ['dam', 'facility', 'runway']) {
-  assert.match(missions, new RegExp('\\\\b' + mission + ':\\\\s*\\\\{'), 'Fase ausente: ' + mission);
+  assert.ok(missions.includes(mission + ': {'), 'Fase ausente: ' + mission);
 }
 const enemies = fs.readFileSync(path.join(root, 'src/guards.js'), 'utf8');
 assert.ok(enemies.includes('hasLineOfSight'), 'Guardas devem checar obstáculos na visão');
