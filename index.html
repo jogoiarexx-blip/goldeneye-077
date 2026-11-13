@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GoldenEye 007 Remastered — Dam, Facility & Runway | Protótipo</title>
+  <title>GoldenEye 007 Remastered — Campanhas Dam, Facility, Runway e Surface 1</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070b10'/%3E%3Ctext x='32' y='45' font-family='Arial,sans-serif' font-size='34' font-weight='bold' fill='%2338bdf8' text-anchor='middle'%3E07%3C/text%3E%3C/svg%3E">
   <meta name="description" content="Protótipo não oficial de FPS de espionagem com três missões jogáveis em Three.js.">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -84,8 +84,8 @@
         </div>
       </div>
 
-      <!-- Seletor de Fase (Missão 01: Dam / Missão 02: Facility / Missão 03: Runway) -->
-      <div class="grid grid-cols-3 gap-2 mb-5">
+      <!-- Campanha: quatro missões, Surface 1 disponível após concluir Runway -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
         <button data-mission="dam" class="mission-btn px-3 py-2.5 rounded-xl border text-left transition-all bg-sky-500/20 border-sky-400/60 cursor-pointer">
           <div class="text-[10px] font-mono-tech text-sky-300">MISSÃO 01</div>
           <div class="text-xs font-extrabold text-white">DAM</div>
@@ -97,6 +97,11 @@
         <button data-mission="runway" class="mission-btn px-3 py-2.5 rounded-xl border text-left transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.07] cursor-pointer">
           <div class="text-[10px] font-mono-tech text-slate-400">MISSÃO 03</div>
           <div class="text-xs font-extrabold text-white">RUNWAY</div>
+        </button>
+        <button data-mission="surface1" class="mission-btn px-3 py-2.5 rounded-xl border text-left transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.07] cursor-pointer" aria-label="Missão 04 Surface 1">
+          <div class="text-[10px] font-mono-tech text-slate-400">MISSÃO 04</div>
+          <div class="text-xs font-extrabold text-white">SURFACE 1</div>
+          <div class="surface-status text-[9px] mt-1 font-mono-tech text-amber-300">BLOQUEADA</div>
         </button>
       </div>
 
@@ -445,5 +450,6 @@
   <script src="src/game.js" defer></script>
   <script src="src/mission-enhancements.js" defer></script>
   <script src="src/tactics-v1-3.js" defer></script>
+  <script src="src/surface-v1-4.js" defer></script>
 </body>
 </html>
