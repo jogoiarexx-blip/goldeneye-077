@@ -8,7 +8,7 @@ class Game{update(){}}
 const window={};
 vm.runInNewContext(code,{THREE,DamLevelBuilder:Builder,GoldenEyeDamGame:Game,window,console});
 const api=window.GoldenEyeNPCScale;
-assert.equal(api.version,'3.0');
+assert.equal(api.version,'3.1');
 const geometry=new THREE.BoxGeometry(.4,1,.3,2,6,2);
 geometry.translate(0,.5,0);
 const n=geometry.attributes.position.count,indices=new Uint16Array(n*4),

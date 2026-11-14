@@ -93,9 +93,9 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
  const old=pending[pending.length-1];staleBuilder.build('dam');
  const orphan=new THREE.Group(),mesh=new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshStandardMaterial());orphan.add(mesh);let released=0;mesh.geometry.addEventListener('dispose',()=>released++);old.done({scene:orphan,animations:[]});assert.equal(released,1);
  const fallback=new Builder();fallback.build('facility');pending[pending.length-1].fail();
- assert.equal(fallback.npcs[1].modelStatus,'fallback');
- assert.equal(fallback.npcs[1].mesh.children.length,1);
- const fb=new THREE.Box3().setFromObject(fallback.npcs[1].mesh);
+ assert.equal(fallback.npcs[2].modelStatus,'fallback');
+ assert.equal(fallback.npcs[2].mesh.children.length,1);
+ const fb=new THREE.Box3().setFromObject(fallback.npcs[2].mesh);
  assert.ok(Math.abs(fb.max.y-fb.min.y-1.72)<.02,'scientist fallback must be same height');
  assert.ok(Math.abs(fb.min.y)<.02,'fallback feet on floor');
  console.log('OK NPC integration: contact, independent skinning, shared resources, pause, walk/talk/idle, death, stale load and fallback.');
