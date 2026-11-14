@@ -123,9 +123,17 @@ assert.equal(platform.radius,1.75);
 assert.ok(level.damJumpAnchor&&level.damJumpPoint,'Ancoragem do bungee');
 const wall=level.colliders.filter(c=>Math.abs(c.minX+10.025)<.02 &&
  Math.abs(c.maxX+9.575)<.02);
-assert.equal(wall.length,2,'Parapeito esquerdo deve ter abertura real');
+assert.equal(wall.length,3,'Parapeito com aberturas para píer e bungee');
 assert.ok(wall.every(c=>c.maxZ< -121 || c.minZ> -115),
  'Parapeito não pode bloquear acesso em Z=-118.1');
+assert.ok(wall.every(c=>c.maxZ< -47.9 || c.minZ> -39.8),
+ 'Parapeito não pode bloquear o píer em Z=-44');
+assert.ok(level.colliders.some(c=>c.minX<3.4&&c.maxX>2.4&&
+ c.minZ<-116&&c.maxZ>-116),
+ 'Casa de máquinas deve manter o batente esquerdo');
+assert.ok(!level.colliders.some(c=>c.minX<4.6&&c.maxX>4.6&&
+ c.minZ<-116&&c.maxZ>-116&&c.maxY>1),
+ 'Entrada na casa de máquinas não pode ter parede invisível');
 assert.ok(!level.colliders.some(c=>c.minX< -13.3 && c.maxX> -14.1 &&
   c.minZ< -118.1 && c.maxZ> -118.1 &&
   c.maxY>1 && c.minY<1.65),'Ponto de salto deve estar livre');
