@@ -12,7 +12,7 @@ class Builder {
 class Game{update(){}}
 const FakeThree=Object.assign({},THREE,{GLTFLoader:class {load(url,done,progress,fail){pending.push({url,done,fail})}}});
 const ctx=vm.createContext({THREE:FakeThree,DamLevelBuilder:Builder,GoldenEyeDamGame:Game,console,window:{}});
-vm.runInContext(fs.readFileSync(require.resolve('../src/npc-models-v3-0.js'),'utf8'),ctx);
+vm.runInContext(fs.readFileSync(require.resolve('../src/npc-models-v3-2.js'),'utf8'),ctx);
 const builder=new Builder();builder.build('facility');
 assert.equal(builder.npcs.find(n=>n.id==='dr_doak').displayName,'Dra.','a médica deve substituir o contato que entrega o decodificador');
 assert.ok(pending.some(p=>p.url==='assets/models/scientist.glb'),'cientista masculino mantido');
