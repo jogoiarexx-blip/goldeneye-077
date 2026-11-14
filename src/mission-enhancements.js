@@ -157,6 +157,15 @@
   };
   function guideTarget(gameInstance, id) {
     const level = gameInstance.levelBuilder;
+    // Runway: nunca enviar o jogador pela lateral quando o checkpoint
+    // principal estiver fechado; apontar para o leitor do lado de entrada.
+    const runwayGate = gameInstance.currentMissionId === 'runway'
+      ? level.gates.find(g => g.id === 'run_gate_1') : null;
+    if(runwayGate && !runwayGate.isOpen){
+      const reader=level.interactables.find(i =>
+        i.id === 'open_run_gate_1' && !i.completed);
+      if(reader)return reader.position;
+    }
     // Em Surface 2 o jogador precisa abrir o checkpoint para chegar ao helicóptero.
     const gate = gameInstance.currentMissionId === 'surface2'
       ? level.gates.find(g => g.id === 's2_gate') : null;
@@ -211,9 +220,13 @@
     const gatePending = gameInstance.currentMissionId === 'surface2' &&
       ['s2_disable_helicopter', 's2_bunker_entry'].includes(objective.id) &&
       gameInstance.levelBuilder.gates.some(g => g.id === 's2_gate' && !g.isOpen);
-    view.textContent = gatePending
-      ? 'ACESSO: ABRIR PORTÃO NORTE' + distance
-      : 'DIRETIVA: ' + (labels[objective.id] || objective.title) + distance;
+    const runwayGatePending=gameInstance.currentMissionId==='runway' &&
+      gameInstance.levelBuilder.gates.some(g => g.id === 'run_gate_1' && !g.isOpen);
+    view.textContent = runwayGatePending
+      ? 'ACESSO: DESTRAVAR PORTÃO DA PISTA' + distance
+      : gatePending
+        ? 'ACESSO: ABRIR PORTÃO NORTE' + distance
+        : 'DIRETIVA: ' + (labels[objective.id] || objective.title) + distance;
   }
 
   const originalUpdate = game.update;
