@@ -684,7 +684,10 @@
         this.addBox(8.6, 0.12, -42, 2.6, 0.24, 174, matConcrete, false);
 
         // Parapeito esquerdo sobre o abismo + contrafortes estruturais + comportas de água (Spillways)
-        this.addBox(-9.8, 0.75, -42, 0.45, 1.5, 174, matConcrete, true);
+        // Acesso real ao bungee: interrompe o parapeito em Z -121.4 .. -114.8.
+        // A antiga parede contínua bloqueava toda a passagem até a plataforma.
+        this.addBox(-9.8, 0.75, -34.9, 0.45, 1.5, 159.8, matConcrete, true);
+        this.addBox(-9.8, 0.75, -125.2, 0.45, 1.5, 7.6, matConcrete, true);
         const matFoam = new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.55 });
         for (let z = 36; z >= -120; z -= 14) {
           this.addBox(-10.6, -18, z, 2.2, 38, 2.4, matConcrete, false);
@@ -903,27 +906,75 @@
         this.levelGroup.add(radarMast, radarDish);
         this.animatedProps.push({ type: 'propeller', mesh: radarDish });
 
-        // Passarela saliente de Bungee sobre o abismo (X = -11.5, Z = -118)
-        this.addBox(-11.2, -0.15, -118, 3.6, 0.35, 3.4, matMetal, false);
-        this.addBox(-11.2, 0.55, -116.4, 3.6, 1.1, 0.14, matHazard, true);
-        this.addBox(-11.2, 0.55, -119.6, 3.6, 1.1, 0.14, matHazard, true);
-
-        const bungeeBeacon = new THREE.Mesh(
-          new THREE.RingGeometry(0.65, 0.9, 28),
-          new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide })
+        // BUNGEE 2.0: plataforma utilizável, 6.5 m, apoiada na abertura do parapeito.
+        // Centro X -11.65, ponta X -14.9; corredor livre de Z -120.45 a -115.75.
+        const matBungeeSteel = new THREE.MeshStandardMaterial({
+          color: 0x334155, metalness: 0.72, roughness: 0.38
+        });
+        const matBungeeGrate = new THREE.MeshStandardMaterial({
+          color: 0x738897, metalness: 0.56, roughness: 0.55
+        });
+        const matBungeeSignal = new THREE.MeshBasicMaterial({color: 0xfacc15});
+        const deck = this.addBox(-11.65, -0.18, -118.1, 6.5, 0.34, 4.7,
+          matBungeeGrate, false, false);
+        deck.receiveShadow = true;
+        // Estrutura inferior do balanço: sem colisores na zona da queda.
+        for (const z of [-119.92, -116.28]) {
+          this.addBox(-11.65, -0.52, z, 6.5, 0.28, 0.24,
+            matBungeeSteel, false, false);
+          this.addBox(-11.65, 0.77, z, 6.5, 1.5, 0.15, matBungeeSteel, true);
+          this.addBox(-11.65, 1.65, z, 6.5, 0.14, 0.18,
+            matBungeeSignal, false, false);
+          for(const x of [-14.4, -12.1, -9.7]) {
+            this.addBox(x, 0.81, z, 0.16, 1.45, 0.2,
+              matBungeeSteel, false, false);
+          }
+        }
+        for(const x of [-14.38,-12.8,-11.2,-9.6]){
+          this.addBox(x, -.007, -118.1, 0.12, 0.025, 4.38,
+            matBungeeSteel, false, false);
+        }
+        // Contraventamentos leves por baixo da plataforma.
+        for(const z of [-119.6,-116.6]){
+          const brace = new THREE.Mesh(
+            new THREE.CylinderGeometry(.09,.13,7,7),matBungeeSteel
+          );
+          brace.position.set(-11.65,-3.5,z);
+          brace.rotation.z=-0.58;
+          this.levelGroup.add(brace);
+        }
+        // Faixas amarelas de advertência e borda de salto sem bloqueio físico.
+        this.addBox(-14.47, .024, -118.1, .25, .03, 4.15,
+          matBungeeSignal, false, false);
+        for(const x of [-13.5,-12.35,-11.2]){
+          this.addBox(x,.022,-118.1,.13,.025,2.1,
+            matBungeeSignal,false,false);
+        }
+        // Guincho de ancoragem, corpo metálico + bobina, preso à lateral.
+        const spool = new THREE.Mesh(new THREE.CylinderGeometry(.45,.45,.8,12),matBungeeSteel);
+        spool.rotation.z=Math.PI/2;
+        spool.position.set(-13.15,.85,-119.65);
+        const spoolHub = new THREE.Mesh(
+          new THREE.CylinderGeometry(.23,.23,.9,12),matBungeeSignal
         );
-        bungeeBeacon.rotation.x = -Math.PI / 2;
-        bungeeBeacon.position.set(-11.5, 0.05, -118);
+        spoolHub.rotation.z=Math.PI/2;
+        spoolHub.position.copy(spool.position);
+        this.levelGroup.add(spool,spoolHub);
+        const bungeeBeacon = new THREE.Mesh(
+          new THREE.RingGeometry(.61,.82,30),
+          new THREE.MeshBasicMaterial({color:0x22d3ee,side:THREE.DoubleSide})
+        );
+        bungeeBeacon.rotation.x=-Math.PI/2;
+        bungeeBeacon.position.set(-13.92,.04,-118.1);
         this.levelGroup.add(bungeeBeacon);
-
+        this.damJumpAnchor=new THREE.Vector3(-13.2,1.0,-119.62);
+        this.damJumpPoint=new THREE.Vector3(-14.1,.02,-118.1);
         this.interactables.push({
-          id: 'bungee',
-          type: 'exit',
-          position: new THREE.Vector3(-11.5, 1.0, -118),
-          radius: 2.6,
-          prompt: 'Pressione [E] para executar Salto de Bungee',
-          completed: false,
-          visualMesh: bungeeBeacon
+          id:'bungee', type:'exit',
+          position:new THREE.Vector3(-13.92,1,-118.1),
+          radius:1.75,
+          prompt:'Pressione [E] na ponta da passarela para iniciar o bungee',
+          completed:false,visualMesh:bungeeBeacon
         });
 
         // 6. CAIXAS DE ALARME DESTRUTÍVEIS (3 unidades estratégicas)
