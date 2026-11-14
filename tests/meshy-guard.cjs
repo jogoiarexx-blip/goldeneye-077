@@ -29,8 +29,8 @@ assert.ok(positions.count>=20000,'Modelo perdeu geometria excessivamente');
 assert.ok(positions.count<35000,'Modelo pesado demais');
 assert.ok(positions.max[1]-positions.min[1]>1.8,'Original full-size geometry');
 assert.equal(mesh.primitives.length,1,'Single GLB draw call');
-const source=fs.readFileSync(path.join(root,'src/meshy-guard-v2-9.js'),'utf8');
-new vm.Script(source,{filename:'src/meshy-guard-v2-9.js'});
+const source=fs.readFileSync(path.join(root,'src/meshy-guard-v3-2.js'),'utf8');
+new vm.Script(source,{filename:'src/meshy-guard-v3-2.js'});
 for (const token of [
  'function cloneVisual(', 'function attach(', 'function cleanup(',
  'this.meshyGuardTarget', "guard.state === 'DEAD'",
@@ -38,8 +38,8 @@ for (const token of [
  'previousStart.apply(this, args)', 'previousGuardUpdate.call(this, dt, ...args)'
 ]) assert.ok(source.includes(token),'Integração incompleta: '+token);
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-assert.ok(html.includes('src="src/meshy-guard-v2-9.js" defer'));
-assert.ok(html.indexOf('src/meshy-guard-v2-9.js') >
+assert.ok(html.includes('src="src/meshy-guard-v3-2.js" defer'));
+assert.ok(html.indexOf('src/meshy-guard-v3-2.js') >
   html.indexOf('src/mobile-controls-v2-4.js'));
 console.log('OK Meshy: GLB válido, '+binary.length+' bytes, '+
   positions.count+' vértices, 3-4 guardas especiais por fase e fallback seguro.');
