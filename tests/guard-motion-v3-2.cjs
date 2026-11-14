@@ -22,8 +22,8 @@ class Guard {
  update(dt){if(this.state!=='DEAD')this.pos.z+=dt*2;return true;}
 }
 class Game{
- constructor(){this.guards=[];this.appState='PLAYING';}
- startMission(){this.guards=Array.from({length:10},(_,i)=>new Guard(i));return true;}
+ constructor(count=10){this.guards=[];this.appState='PLAYING';this.count=count;}
+ startMission(){this.guards=Array.from({length:this.count},(_,i)=>new Guard(i));return true;}
 }
 let loads=0;
 const FakeThree=Object.assign({},THREE,{GLTFLoader:class{
@@ -72,8 +72,7 @@ assert.equal(ma.geometry.getAttribute('position').version,changed,
 game.startMission();
 assert.equal(loads,1,'Subsequent level must reuse cached GLB');
 assert.equal(game.guards.filter(g=>g.meshySpecialModel).length,4);
-const small=new Game();
-small.startMission=function(){this.guards=Array.from({length:7},(_,i)=>new Guard(i))};
+const small=new Game(7);
 small.startMission();
 assert.equal(small.guards.filter(g=>g.meshySpecialModel).length,3,
  '3 special guards on a seven-guard map');
