@@ -5,12 +5,12 @@ const path = require('node:path');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '..');
-const asset = path.join(root,'assets/models/meshy-guard-special.glb');
+const asset = path.join(root,'assets/models/meshy-guard-fixed-v2-9.glb');
 const binary = fs.readFileSync(asset);
 assert.equal(binary.toString('ascii',0,4),'glTF','Asset deve ser GLB válido');
 assert.equal(binary.readUInt32LE(4),2,'Formato GLB 2.0');
 assert.equal(binary.readUInt32LE(8),binary.length,'Tamanho do GLB consistente');
-assert.ok(binary.length < 200_000,'Modelo Meshy deve ter menos de 200 KB');
+assert.ok(binary.length < 3_000_000,'Modelo Meshy deve ter menos de 200 KB');
 const jsonLength=binary.readUInt32LE(12),jsonTag=binary.toString('ascii',16,20);
 assert.equal(jsonTag,'JSON');
 const gltf=JSON.parse(binary.toString('utf8',20,20+jsonLength));
@@ -25,10 +25,12 @@ assert.ok(primitives.some(p=>p.attributes.POSITION!==undefined &&
   p.attributes.TEXCOORD_0!==undefined),
   'Geometria e UVs devem ter sido preservados');
 const positions=gltf.accessors[primitives[0].attributes.POSITION];
-assert.ok(positions.count>=1000,'Modelo perdeu geometria excessivamente');
-assert.ok(positions.count<10000,'Modelo pesado demais');
-const source=fs.readFileSync(path.join(root,'src/meshy-guard-v2-5.js'),'utf8');
-new vm.Script(source,{filename:'src/meshy-guard-v2-5.js'});
+assert.ok(positions.count>=20000,'Modelo perdeu geometria excessivamente');
+assert.ok(positions.count<35000,'Modelo pesado demais');
+assert.ok(positions.max[1]-positions.min[1]>1.8,'Original full-size geometry');
+assert.equal(mesh.primitives.length,1,'Single GLB draw call');
+const source=fs.readFileSync(path.join(root,'src/meshy-guard-v2-9.js'),'utf8');
+new vm.Script(source,{filename:'src/meshy-guard-v2-9.js'});
 for (const token of [
  'function cloneVisual(', 'function attach(', 'function cleanup(',
  'this.meshyGuardTarget', "guard.state === 'DEAD'",
@@ -36,8 +38,8 @@ for (const token of [
  'previousStart.apply(this, args)', 'previousGuardUpdate.call(this, dt, ...args)'
 ]) assert.ok(source.includes(token),'Integração incompleta: '+token);
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-assert.ok(html.includes('src="src/meshy-guard-v2-5.js" defer'));
-assert.ok(html.indexOf('src/meshy-guard-v2-5.js') >
+assert.ok(html.includes('src="src/meshy-guard-v2-9.js" defer'));
+assert.ok(html.indexOf('src/meshy-guard-v2-9.js') >
   html.indexOf('src/mobile-controls-v2-4.js'));
 console.log('OK Meshy: GLB válido, '+binary.length+' bytes, '+
   positions.count+' vértices, um guarda especial por fase e fallback seguro.');

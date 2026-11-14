@@ -12,7 +12,7 @@ class Builder {
 class Game{update(){}}
 const FakeThree=Object.assign({},THREE,{GLTFLoader:class {load(url,done,progress,fail){pending.push({url,done,fail})}}});
 const ctx=vm.createContext({THREE:FakeThree,DamLevelBuilder:Builder,GoldenEyeDamGame:Game,console});
-vm.runInContext(fs.readFileSync(require.resolve('../src/doctor-model.js'),'utf8'),ctx);
+vm.runInContext(fs.readFileSync(require.resolve('../src/npc-models-v2-9.js'),'utf8'),ctx);
 const builder=new Builder();builder.build('facility');
 assert.equal(builder.npcs.find(n=>n.id==='dr_doak').displayName,'Dra.','a médica deve substituir o contato que entrega o decodificador');
 assert.ok(pending.some(p=>p.url==='assets/models/scientist.glb'),'modelo enviado do cientista precisa ser carregado');
@@ -40,7 +40,7 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
  contact.mesh.position.x+=.1;game.update(.05);assert.equal(contact.visual.current,contact.visual.actions.Walking);
  // Regression: GLB animations or accidental runtime scaling must not create
  // 2x / 5x scientists and each clone keeps the exact same target height.
- a.visual.model.scale.multiplyScalar(5);
+ a.visual.actor.scale.multiplyScalar(5);
  for(let i=0;i<20;i++)game.update(.05);
  for(const npc of [a,b]){
   npc.mesh.updateMatrixWorld(true);
@@ -48,6 +48,8 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
   assert.ok(Math.abs(actual.max.y-actual.min.y-1.72)<.05,'scientist height stable: '+npc.id);
  }
  assert.equal(a.visual.targetHeight,1.72);assert.equal(b.visual.targetHeight,1.72);
+ assert.equal(a.visual.actor.parent,a.visual.model,'Independent scale holder');
+ assert.ok(a.visual.model.scale.x<b.visual.model.scale.x,'Animation root cannot override scale holder');
  contact.dead=true;const deathTime=contact.visual.mixer.time;game.update(.05);assert.equal(contact.visual.mixer.time,deathTime);
  let disposed=0;skinA.geometry.addEventListener('dispose',()=>disposed++);
  builder.levelGroup.remove(a.mesh);assert.equal(a.visual.released,true);assert.equal(disposed,0,'corpse does not dispose resources still used by other scientists');
