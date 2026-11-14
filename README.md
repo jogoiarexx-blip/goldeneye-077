@@ -12,6 +12,25 @@ Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy 
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
 
+## Auditoria geral das 10 fases — v2.0.5
+
+**Abrangência:** Dam, Facility, Runway, Surface 1, Bunker 1, Silo, Frigate, Surface 2, Bunker 2 e Statue. A revisão utilizou o código original de construção de cada mapa e foi integrada ao sistema de testes contínuos.
+
+**Corpos desaparecem após cinco segundos de jogo:**
+- Guardas abatidos em qualquer uma das dez fases, incluindo reforços criados dinamicamente, permanecem por **5 segundos de tempo de jogabilidade**; depois o corpo é removido da cena. A pausa e as cutscenes não aceleram o contador.
+- Cientistas abatidos em missões que continuam após o disparo também desaparecem após cinco segundos. Regras de falha por morte de aliados/reféns permanecem intactas.
+- A remoção preserva a contagem de abates e impede que corpos invisíveis gerem alertas de descoberta. Geometrias são descartadas; materiais comuns a vários guardas só são descartados após o último usuário ser removido.
+
+**Correções sistêmicas:**
+- Ao selecionar uma missão diferente no dossiê, os guardas do mapa anterior e partículas de faísca antigas deixam de ser renderizados.
+- Ao carregar novamente **Dam, Facility ou Runway**, a iluminação de fundo/neblina é redefinida para a identidade correta; não há mais herança do clima de neve ou de um bunker.
+- O construtor comum mantém um relatório não destrutivo de integridade (coordenadas, limites, portões e pontos de interação), acessível em `window.GoldenEyeAudit.getReport()`. Não apaga colisores automaticamente para evitar atalhos acidentais.
+- Na **Dam**, o teste de rotas detectou que o píer em Z=-44 e a sala de máquinas em Z=-120 tinham coletes/munição e guardas isolados por parapeitos inteiros. Duas aberturas foram criadas sem remover as barreiras de proteção ou afetar o bungee.
+
+**Auditoria automatizada de toda a campanha:** `tests/campaign-audit.cjs` constrói as dez fases usando os módulos reais e testa limites, dimensões de colisores, pontos de spawn, interações, NPCs, itens e guardas. Executa uma busca de caminhos com todos os portões abertos e também compara a área alcançável com os portões fechados; **as oito fases com portões mostraram restrições efetivas**. `tests/global-audit.cjs` testa os cinco segundos, a pausa, as mortes de NPCs, o compartilhamento de materiais, os reforços, a transição e a troca de atmosfera. Ambos rodam junto dos testes anteriores pelo comando `node tests/check.cjs`.
+
+**Limitação:** as verificações são simulações estruturais e de lógica. Não substituem jogar as dez fases completas em PC e celular com WebGL, confirmar a qualidade visual das animações, fotografias, som, interface e acompanhar cada objetivo em tempo real.
+
 ## Facility — auditoria de cenário e circulação (v2.0.4)
 
 Revisão estrutural da **segunda fase**, mantendo objetivos, NPCs e três dificuldades do GDD:
