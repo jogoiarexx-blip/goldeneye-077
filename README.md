@@ -12,6 +12,18 @@ Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy 
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
 
+## Auditoria de cenários — correção de estrutura flutuante (v2.0.2)
+
+Correção da primeira fase a partir de uma captura de tela enviada pelo jogador:
+
+- **Torres suspensas:** duas torres de transmissão de Dam eram chamadas com `buildTransmissionTower(13.5, 18, z)`, mas o segundo parâmetro é a **altura da base**, não o comprimento da estrutura. Agora usam `baseY=0`, com sapatas e bases de concreto apoiadas no reservatório. A torre da sala de máquinas continua apoiada no teto a `4.6` unidades; a de Runway permanece sobre o prédio a `5.2`.
+- **Penhascos gigantes retangulares:** retiradas as duas caixas de rocha que formavam paredes imensas ao lado da pista. No lugar, encostas facetadas de poucos polígonos, fora dos limites de movimentação, com montanhas distantes reposicionadas e base apoiada no terreno.
+- **Transição entre níveis:** os pontos de ancoragem e salto não persistem nas outras missões.
+- **Otimização comum a todas as missões:** `DamLevelBuilder.clear()` agora descarta geometrias, materiais e texturas da fase anterior quando o jogador reinicia ou muda de missão. Os recursos compartilhados são liberados uma única vez, sem afetar os modelos do jogador e das armas.
+- **Testes preventivos:** `tests/dam-rework.cjs`, chamado por `node tests/check.cjs`, confere a altura das três torres na Dam, a torre de Runway, a ausência dos grandes cubos, as colisões da plataforma de salto, a limpeza ao entrar em Facility/Runway e a liberação de memória.
+
+Os testes simulados aprovam estrutura e lógica; uma conferência visual com WebGL real ainda é necessária. O trabalho visual detalhado foi feito **em Dam**; a auditoria estética de cada uma das outras fases fica para atualizações seguintes.
+
 ## Melhorias da primeira missão — Dam v2.0.1
 
 Atualização corretiva focada na primeira missão, sem modificar o roteiro ou objetivos das outras fases.
