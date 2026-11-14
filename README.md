@@ -1,6 +1,6 @@
 # GoldenEye 007 Remastered — protótipo não oficial
 
-Protótipo de FPS de espionagem para navegador. Contém **quatro missões**: Dam, Facility, Runway e Surface 1 (desbloqueada após concluir Runway). O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
+Protótipo de FPS de espionagem para navegador. Contém **cinco missões**: Dam, Facility, Runway, Surface 1 e Bunker 1, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
 
 ## Jogar pelo GitHub Pages
 
@@ -11,6 +11,20 @@ O repositório está configurado para publicar automaticamente da branch `main`,
 Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy from a branch**, **Branch: main**, **Folder: /(root)**. Veja o status em **Actions → pages build and deployment**. A página `404.html` oferece uma rota de volta para o jogo quando um endereço interno antigo é acessado.
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
+
+## Missão 05 — Bunker 1 (v1.5)
+
+Novo centro subterrâneo de Severnaya, inspirado no GDD, com três portas de segurança, cinco câmeras, postos de monitoramento, oito patrulhas e equipamentos de inteligência. **Bunker 1 é desbloqueado ao concluir Surface 1**; o progresso é salvo em `localStorage` quando disponível.
+
+Objetivos por dificuldade:
+
+- **AGENT:** ativar computador, baixar dados, sair pelo acesso de manutenção (3).
+- **SECRET AGENT:** copiar a chave GoldenEye sem retirar a original, iniciar computador, copiar dados, sair (4).
+- **00 AGENT:** neutralizar vigilância, copiar chave preservando original, ativar computador, baixar dados, fotografar tela central e sair (6).
+
+A ordem é aplicada quando necessária: computador exige cópia prévia da chave nas dificuldades que a requerem; download leva **4 segundos** e é cancelado se o jogador se afasta; fotografia só vale após o download, com enquadramento correto e linha de visão. O sistema impede repetir objetivos já realizados. A próxima fase do GDD, **Silo**, ainda não está implementada.
+
+Arquivo: `src/bunker-v1-5.js`; os testes automáticos `node tests/check.cjs` verificam a carga e a presença das mecânicas. Também foram executados testes simulados de caminhos, portões e sequência das interações. Essa validação não substitui testes visuais em WebGL no navegador.
 
 ## Missão 04 — Surface 1 (v1.4)
 
