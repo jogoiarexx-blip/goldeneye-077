@@ -109,7 +109,7 @@ const worldDam=fs.readFileSync(path.join(root,'src/world.js'),'utf8');
 for(const token of [
   "'bungee'", 'this.damJumpAnchor=new THREE.Vector3',
   "'Pressione [E] na ponta da passarela",
-  'this.addBox(-9.8, 0.75, -34.9',
+  'this.addBox(-9.8,0.75,2.575',
   'this.addBox(-9.8, 0.75, -125.2'
 ]) assert.ok(worldDam.includes(token),'Acesso de bungee defeituoso: '+token);
 require('./dam-rework.cjs');
