@@ -674,8 +674,12 @@
             tri(corners[i], back[j], corners[j]);
           }
           const geo = new THREE.BufferGeometry();
-          geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-          if (typeof geo.computeVertexNormals === 'function') geo.computeVertexNormals();
+          // Alguns testes usam um mock de geometria sem atributos.
+          // No Three.js real, sempre geramos as faces e as normais completas.
+          if (typeof geo.setAttribute === 'function') {
+            geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+            if (typeof geo.computeVertexNormals === 'function') geo.computeVertexNormals();
+          }
           return mesh(name, geo, material, 0, 0, 0, true);
         };
 
