@@ -142,7 +142,12 @@
     s2_disable_surveillance: 'Desativar câmeras de vigilância',
     s2_cut_bunker_link: 'Cortar enlace com o bunker',
     s2_disable_helicopter: 'Neutralizar helicóptero de apoio',
-    s2_bunker_entry: 'Entrada subterrânea'
+    s2_bunker_entry: 'Entrada subterrânea',
+    b2_compare_records: 'Cruzar registros de funcionários e baixas',
+    b2_get_videotape: 'Recuperar fita de vídeo',
+    b2_destroy_cameras: 'Destruir câmeras do bunker',
+    b2_get_manual: 'Recuperar manual GoldenEye',
+    b2_escape_with_natalya: 'Escapar com Natalya'
   };
   function guideTarget(gameInstance, id) {
     const level = gameInstance.levelBuilder;
@@ -158,6 +163,17 @@
     else if (id === 'destroy_tanks') entries = level.tanks.filter(x => !x.destroyed);
     else if (id === 'destroy_emplacements') entries = level.emplacements.filter(x => !x.destroyed);
     else if (id === 'frigate_rescue_hostages') entries = level.interactables.filter(x => x.type === 'frigate_hostage' && !x.completed);
+    else if (id === 'b2_destroy_cameras') entries = level.interactables.filter(x => x.type === 'b2_camera' && !x.camera.destroyed);
+    else if (id === 'b2_compare_records' && level.bunker2State &&
+             !level.bunker2State.records.compared) {
+      const r = level.bunker2State.records;
+      const nextLog = !r.personnel ? 'b2_personnel_log' : !r.casualty ?
+        'b2_casualty_log' : 'b2_compare_records';
+      entries = level.interactables.filter(x => x.id === nextLog && !x.completed);
+    }
+    else if (id === 'b2_escape_with_natalya' && level.bunker2State &&
+             !level.bunker2State.freed)
+      entries = level.interactables.filter(x => x.id === 'b2_free_natalya');
     else entries = level.interactables.filter(x => x.id === id && !x.completed);
     entries.sort((a, b) => gameInstance.player.pos.distanceTo(a.position) - gameInstance.player.pos.distanceTo(b.position));
     return entries[0]?.position || null;
