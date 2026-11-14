@@ -147,7 +147,13 @@
     b2_get_videotape: 'Recuperar fita de vídeo',
     b2_destroy_cameras: 'Destruir câmeras do bunker',
     b2_get_manual: 'Recuperar manual GoldenEye',
-    b2_escape_with_natalya: 'Escapar com Natalya'
+    b2_escape_with_natalya: 'Escapar com Natalya',
+    st_valentin: 'Encontrar Valentin na clareira oeste',
+    st_janus: 'Confrontar Janus junto ao obelisco',
+    st_helicopter: 'Investigar o helicóptero abandonado',
+    st_natalya: 'Localizar Natalya no setor norte',
+    st_flight_recorder: 'Recuperar gravador do helicóptero',
+    st_exit: 'Sair do parque das estátuas'
   };
   function guideTarget(gameInstance, id) {
     const level = gameInstance.levelBuilder;
