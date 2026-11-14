@@ -399,6 +399,13 @@
             : `MINAS REMOTAS [G]/[F]: ${this.player.remoteMines} (${this.player.placedMines.length} ATIVAS)`;
         }
 
+        const posture = document.getElementById('hud-posture');
+        if (posture) posture.textContent = this.player.inTank ? 'TANQUE' : (this.player.crouched ? 'AGACHADO' : 'EM PÉ');
+        const crouchBtn = document.getElementById('btn-mobile-crouch');
+        if (crouchBtn) {
+          crouchBtn.textContent = this.player.crouched ? 'LEVANTAR' : 'AGACHAR';
+          crouchBtn.setAttribute('aria-pressed', this.player.crouched ? 'true' : 'false');
+        }
         const done = this.objectives.filter(o => o.completed).length;
         document.getElementById('hud-obj-count').textContent = `${done}/${this.objectives.length}`;
       }
@@ -809,6 +816,29 @@
         this.updateHUD();
       }
 
+      // Agachamento real: a postura altera câmera, velocidade e altura de colisão.
+      // Nunca se levanta quando o teto está sobre o jogador.
+      toggleCrouch() {
+        if (this.appState !== 'PLAYING' || this.player.inTank) return false;
+        if (this.player.crouched) {
+          const radius = 0.47;
+          const x = this.player.pos.x, z = this.player.pos.z;
+          const blocked = this.levelBuilder.colliders.some(box =>
+            box.minX <= box.maxX &&
+            x + radius > box.minX && x - radius < box.maxX &&
+            z + radius > box.minZ && z - radius < box.maxZ &&
+            (box.maxY ?? 5) > 1.20 && (box.minY ?? 0) < 1.74
+          );
+          if (blocked) {
+            this.notifyHUD('TETO BAIXO: AFASTE-SE PARA LEVANTAR');
+            return false;
+          }
+        }
+        this.player.crouched = !this.player.crouched;
+        this.updateHUD();
+        return true;
+      }
+
       interact() {
         if (this.appState !== 'PLAYING') return;
 
@@ -969,8 +999,9 @@
         }
         nextPos.z = Math.max(b.minZ, Math.min(b.maxZ, nextPos.z));
 
+        const eyeHeight = this.player.inTank ? 2.35 : (this.player.crouched ? 1.13 : 1.65);
         for (const box of this.levelBuilder.colliders) {
-          if ((box.minY ?? 0) > nextPos.y + 0.08 || (box.maxY ?? 5) < nextPos.y - (this.player.crouched ? 1.1 : 1.62)) continue;
+          if ((box.minY ?? 0) > eyeHeight + 0.08 || (box.maxY ?? 5) < eyeHeight - (this.player.crouched ? 1.1 : 1.62)) continue;
           if (nextPos.x + r > box.minX && nextPos.x - r < box.maxX &&
               nextPos.z + r > box.minZ && nextPos.z - r < box.maxZ) {
             const overlapLeft = (nextPos.x + r) - box.minX;
@@ -1108,6 +1139,9 @@
 
         // Recuperação suave do recuo da arma
         this.weaponMeshGroup.position.z = THREE.MathUtils.lerp(this.weaponMeshGroup.position.z, -0.42, dt * 12);
+        this.weaponMeshGroup.position.y = THREE.MathUtils.lerp(
+          this.weaponMeshGroup.position.y, this.player.crouched ? -0.31 : -0.22, Math.min(1, dt * 10)
+        );
         this.weaponMeshGroup.rotation.x = THREE.MathUtils.lerp(this.weaponMeshGroup.rotation.x, 0, dt * 12);
         // Zoom da mira (Botão Direito) respeitando FOV configurado e lente telescópica do Sniper Rifle
         const curWeapon = this.player.weapons[this.player.weaponIdx];
@@ -1321,7 +1355,7 @@
             if (button(7)) this.fireWeapon();
             if (edge(2)) this.interact();
             if (edge(3)) this.reloadWeapon();
-            if (edge(1) && !this.player.inTank) this.player.crouched = !this.player.crouched;
+            if (edge(1)) this.toggleCrouch();
             if (edge(4)) this.plantRemoteMine();
             if (edge(5)) this.detonateRemoteMines();
             if (edge(14)) this.switchWeapon((this.player.weaponIdx + this.player.weapons.length - 1) % this.player.weapons.length);
@@ -1438,6 +1472,11 @@
 
         // Botões Q Watch (Pausa)
         document.getElementById('btn-open-qwatch').addEventListener('click', () => this.togglePauseQWatch());
+        const crouchButton = document.getElementById('btn-mobile-crouch');
+        if (crouchButton) crouchButton.addEventListener('pointerdown', event => {
+          event.preventDefault();
+          this.toggleCrouch();
+        });
         document.getElementById('btn-qwatch-resume').addEventListener('click', () => this.togglePauseQWatch());
         document.getElementById('btn-qwatch-restart').addEventListener('click', () => this.startMission());
         document.getElementById('btn-qwatch-abort').addEventListener('click', () => {
@@ -1488,7 +1527,7 @@
           if (this.appState === 'PLAYING') {
             if (e.code === 'KeyE') this.interact();
             if (e.code === 'KeyR') this.reloadWeapon();
-            if ((e.code === 'ControlLeft' || e.code === 'ControlRight') && !this.player.inTank) this.player.crouched = !this.player.crouched;
+            if (['ControlLeft', 'ControlRight', 'KeyC'].includes(e.code) && !e.repeat) this.toggleCrouch();
             if (e.code === 'KeyG') this.plantRemoteMine();
             if (e.code === 'KeyF') this.detonateRemoteMines();
             if (e.code === 'Digit1') this.switchWeapon(0);
