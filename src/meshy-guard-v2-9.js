@@ -1,6 +1,6 @@
 /**
  * GoldenEye 077 — guarda Meshy v2.5
- * Um guarda de cada missão usa o modelo Meshy otimizado, preservando
+ * Três ou quatro guardas por missão usam o modelo Meshy otimizado, preservando
  * GuardAgent, patrulhas, tiros, hitboxes, estado DEAD e limpeza após 5 s.
  */
 (() => {
@@ -31,9 +31,13 @@
   }
 
   function attach(game) {
-    const guard = game.meshyGuardTarget;
-    if (!template || !guard || guard.state === 'DEAD' || guard.corpseRemoved ||
-        !game.guards?.includes(guard) || guard.meshySpecialVisual) return false;
+    const targets = game.meshyGuardTargets ||
+      (game.meshyGuardTarget ? [game.meshyGuardTarget] : []);
+    if (!template || !targets.length) return 0;
+    let attached = 0;
+    for (const guard of targets) {
+      if (!guard || guard.state === 'DEAD' || guard.corpseRemoved ||
+          !game.guards?.includes(guard) || guard.meshySpecialVisual) continue;
 
     const body = cloneVisual(template);
     body.name = 'meshy-soldier-fbx-optimized';
@@ -77,7 +81,9 @@
     guard.meshySpecialVisual = rig;
     guard.meshySpecialModel = body;
     guard.meshyWalkCycle = 0;
-    return true;
+    attached++;
+    }
+    return attached;
   }
 
   function load(game) {
@@ -113,15 +119,20 @@
       });
     }
     game.meshyGuardTarget = null;
+    game.meshyGuardTargets = [];
   }
 
   const previousStart = GAME.startMission;
   GAME.startMission = function(...args) {
     cleanup(this);
     const result = previousStart.apply(this, args);
-    // Um único soldado especial por fase; os outros permanecem originais.
-    this.meshyGuardTarget = (this.guards || []).find(g => g.state !== 'DEAD') || null;
-    if (this.meshyGuardTarget) load(this);
+    // Reuse the same GLB/texture for 3-4 existing guards per level.
+    // No extra enemies or additional network requests; one new instance per
+    // patrol cluster. Clones keep materials/geometry independent for corpse cleanup.
+    const active = (this.guards || []).filter(g => g.state !== 'DEAD');
+    this.meshyGuardTargets = active.filter((g,i) => i % 3 === 0).slice(0,4);
+    this.meshyGuardTarget = this.meshyGuardTargets[0] || null;
+    if (this.meshyGuardTargets.length) load(this);
     return result;
   };
 
@@ -154,6 +165,6 @@
   };
 
   window.GoldenEyeMeshyGuard = {
-    version: '2.9', asset: ASSET, get loaded() { return !!template; }
+    version: '3.2', asset: ASSET, get loaded() { return !!template; }
   };
 })();
