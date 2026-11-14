@@ -974,7 +974,7 @@
 
         this.updateHUD();
         if (this.player.hp <= 0) {
-          this.failMission('007 foi neutralizado pela guarnição da represa.');
+          this.failMission(`007 foi neutralizado. Operação encerrada: ${MISSIONS_DATA[this.currentMissionId]?.title || 'missão atual'}.`);
         }
       }
 

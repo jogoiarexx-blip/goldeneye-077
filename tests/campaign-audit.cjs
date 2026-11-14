@@ -89,19 +89,8 @@ const doc={
 };
 const localData=new Map();
 const storage={getItem:k=>localData.get(k)||null,setItem:(k,v)=>localData.set(k,v)};
-const THREE={
- Vector3:Vec,Group:Obj,Object3D:Obj,Mesh,Points:Mesh,
- Sprite:class extends Obj{constructor(mat){super();this.material=mat}},
- BoxGeometry:Geometry,SphereGeometry:Geometry,CylinderGeometry:Geometry,
- ConeGeometry:Geometry,PlaneGeometry:Geometry,RingGeometry:Geometry,
- TorusGeometry:Geometry,OctahedronGeometry:Geometry,DodecahedronGeometry:Geometry,
- CircleGeometry:Geometry,BufferGeometry:Geometry,BufferAttribute:Attr,
- MeshBasicMaterial:Mat,MeshStandardMaterial:Mat,PointsMaterial:Mat,
- SpriteMaterial:Mat,CanvasTexture:Texture,
- Color,FogExp2:class{constructor(c,d){this.color=c;this.density=d}},
- HemisphereLight:Light,PointLight:Light,DirectionalLight,SpotLight:Light,
- DoubleSide:2,RepeatWrapping:1,MathUtils:{lerp:(a,b,t)=>a+(b-a)*t}
-};
+const THREE=require('../vendor/three.min.js');
+
 class FakeGame{
  constructor(){
   this.currentMissionId='dam';this.difficulty='00_AGENT';
@@ -139,12 +128,43 @@ for(const [file]of phases)
 vm.runInContext(read('src/global-audit-v2-0-5.js'),ctx,
  {filename:'src/global-audit-v2-0-5.js'});
 
-const scene=new Obj();
+vm.runInContext(read('src/scenery-v2-1.js'),ctx,{filename:'src/scenery-v2-1.js'});
+let expectedReleases=0,releases=0;
+const scene=new THREE.Scene();
 const world=new ctx.DamLevelBuilder(scene);
 const ids=['dam','facility','runway','surface1','bunker1','silo',
  'frigate','surface2','bunker2','statue'];
 assert.equal(ids.length,10);
 const result=[];
+function checkScenery(world,id){
+ const report=world.sceneryReport;
+ assert.equal(report.mission,id);
+ assert.ok(report.instances>0,id+' sem detalhes');
+ assert.ok(report.instances<=300,id+' excedeu orcamento');
+ assert.ok(report.batches<=3);
+ if(id.startsWith('surface'))assert.equal(report.roofs,4,'quatro telhados com neve');
+ if(id==='statue')assert.ok(report.plinths>0);
+ const group=world.levelGroup.children.find(o=>o.name==='scenery-v2.1-'+id);
+ assert.ok(group);
+ const resources=new Set();
+ group.traverse(o=>{
+  if(o.isInstancedMesh)resources.add(o);
+  if(o.geometry)resources.add(o.geometry);
+  const mats=Array.isArray(o.material)?o.material:[o.material];
+  for(const m of mats)if(m){resources.add(m);if(m.map)resources.add(m.map)}
+ });
+ for(const r of resources){expectedReleases++;r.addEventListener('dispose',()=>releases++)}
+ group.traverse(o=>{
+  if(!o.isInstancedMesh)return;
+  const matrix=new THREE.Matrix4();
+  for(let n=0;n<o.count;n++){
+   o.getMatrixAt(n,matrix);
+   assert.ok(matrix.elements.every(Number.isFinite));
+   assert.ok(matrix.determinant()>0);
+  }
+ });
+ console.log('CENARIO',JSON.stringify(report));
+}
 function flood(level,openedGates){
  const b=level.bounds,step=1;
  // Dam tem dois acessos externos especiais: a ilha do píer (X=-17.6)
@@ -187,7 +207,7 @@ function flood(level,openedGates){
 }
 for(const id of ids){
  world.currentId=id;
- world.build(id);
+ world.build(id);checkScenery(world,id);
  assert.ok(world.levelGroup.children.length>10,
   id+': cenário vazio');
  assert.ok(world.bounds && world.colliders.length,
@@ -237,6 +257,7 @@ for(const id of ids){
   guards:world.guardSpawns.length,npcs:world.npcs.length,
   gates:world.gates.length,closedCells:closed.size,accessibleCells:opened.size});
 }
+world.clear();assert.equal(releases,expectedReleases,'liberar todos os recursos novos exatamente uma vez');
 assert.equal(result.length,10);
 console.log('AUDITORIA DE 10 MAPAS:');
 for(const item of result)console.log(
