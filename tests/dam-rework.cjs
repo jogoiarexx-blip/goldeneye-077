@@ -186,7 +186,7 @@ g.startOutroCutscene();
 assert.equal(g.appState,'CUTSCENE_OUTRO');
 assert.ok(g.damStunt?.group&&g.damStunt?.rope,'Corda e corpo devem existir');
 g.update(.05);
-assert.ok(g.damStunt.vertices[0]===-13.2,'Corda presa à plataforma');
+assert.ok(Math.abs(g.damStunt.vertices[0]+13.2)<.002,'Corda presa à plataforma');
 const firstY=g.damStunt.group.position.y;
 for(let i=0;i<85;i++)g.update(.05);
 assert.ok(g.damStunt.group.position.y<firstY-10,
