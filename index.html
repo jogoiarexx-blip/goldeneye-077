@@ -84,8 +84,8 @@
         </div>
       </div>
 
-      <!-- Campanha: sete missões, incluindo resgate de reféns na Frigate -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-5">
+      <!-- Campanha: oito missões, incluindo retorno a Severnaya (Surface 2) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 mb-5">
         <button data-mission="dam" class="mission-btn px-3 py-2.5 rounded-xl border text-left transition-all bg-sky-500/20 border-sky-400/60 cursor-pointer">
           <div class="text-[10px] font-mono-tech text-sky-300">MISSÃO 01</div>
           <div class="text-xs font-extrabold text-white">DAM</div>
@@ -117,6 +117,11 @@
           <div class="text-[10px] font-mono-tech text-slate-400">MISSÃO 07</div>
           <div class="text-xs font-extrabold text-white">FRIGATE</div>
           <div class="frigate-status text-[9px] mt-1 font-mono-tech text-amber-300">BLOQUEADA</div>
+        </button>
+        <button data-mission="surface2" class="mission-btn px-3 py-2.5 rounded-xl border text-left transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.07] cursor-pointer" aria-label="Missão 08 Surface 2">
+          <div class="text-[10px] font-mono-tech text-slate-400">MISSÃO 08</div>
+          <div class="text-xs font-extrabold text-white">SURFACE 2</div>
+          <div class="surface2-status text-[9px] mt-1 font-mono-tech text-amber-300">BLOQUEADA</div>
         </button>
       </div>
 
@@ -482,5 +487,6 @@
   <script src="src/bunker-v1-5.js" defer></script>
   <script src="src/silo-v1-6.js" defer></script>
   <script src="src/frigate-v1-7.js" defer></script>
+  <script src="src/surface2-v1-8.js" defer></script>
 </body>
 </html>
