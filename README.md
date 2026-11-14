@@ -12,6 +12,19 @@ Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy 
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
 
+## Jogador GLB — modelo 007 enviado
+
+- `assets/models/007.glb`: arquivo original preservado (4.991.548 bytes; 36.524 triângulos, 21.794 vértices, 32 ossos, três texturas JPEG incorporadas).
+- Animações `Walking` e `Running` preservadas. Escala normalizada para 1,85 m, corpo visível ao olhar para baixo e parte superior recortada apenas em primeira pessoa para evitar a cabeça dentro da câmera. Armas, mira e colisão existentes mantidas.
+- O novo personagem substitui o corpo procedural no salto da Dam; arnês, corda e câmera continuam na sequência existente. O arquivo não possui animação de salto: a cena usa a pose parada da caminhada e o movimento cinematográfico do ator.
+- Carregamento único ao iniciar uma missão, com reutilização entre mapas; falha no download não bloqueia a campanha e permite tentar novamente ao reabrir a missão. Three.js r128 e GLTFLoader da mesma revisão incluídos localmente em `vendor/`.
+- `node tests/check.cjs` inclui carregamento real da geometria, skin e clips; em Node, apenas a decodificação das imagens é substituída. Testa pausa, corpo, salto, reinício e troca para Facility.
+- Teste adicional com WebGL: servir a raiz via HTTP e executar `GAME_TEST_URL=http://127.0.0.1:8765 node tests/player-model-browser.cjs` com Playwright/Chromium instalados. A execução local deste teste foi bloqueada pela restrição de sockets do Chromium; qualidade visual e desempenho em PC/celular ainda precisam de conferência no navegador.
+
+## Headshot — eliminação em qualquer dificuldade
+
+Um tiro na cabeça elimina o guarda em Agent, Secret Agent e 00 Agent, independentemente da arma e da vida restante. O dano dos tiros no corpo permanece igual. Regressão automatizada em `tests/headshot.cjs`, incluída em `node tests/check.cjs`.
+
 ## Auditoria geral das 10 fases — v2.0.5
 
 **Abrangência:** Dam, Facility, Runway, Surface 1, Bunker 1, Silo, Frigate, Surface 2, Bunker 2 e Statue. A revisão utilizou o código original de construção de cada mapa e foi integrada ao sistema de testes contínuos.

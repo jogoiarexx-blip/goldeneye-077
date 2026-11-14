@@ -681,7 +681,8 @@
         if (closestGuard && hitPoint) {
           this.stats.shotsHit++;
           const isHeadshot = hitPoint.y > 1.52;
-          const dmg = isHeadshot ? w.damage * 2.2 : w.damage;
+          // Headshots are lethal regardless of weapon or difficulty.
+          const dmg = isHeadshot ? Math.max(closestGuard.hp, w.damage) : w.damage;
           const killed = closestGuard.takeDamage(dmg, this.player.pos);
           this.spawnSpark(hitPoint, isHeadshot ? 0xef4444 : 0xfacc15);
           if (killed) {
