@@ -1,0 +1,102 @@
+/* GoldenEye 077 — controles FPS por toque v2.4 */
+#mobile-fps-controls{display:none}
+#mobile-joystick,#mobile-look-zone,#mobile-actions {touch-action:none;user-select:none;-webkit-user-select:none}
+@media(pointer:coarse){
+ #screen-hud .fixed.top-4 {z-index:3}
+ #screen-hud #hud-posture {z-index:4}
+ .touch-fps-enabled #mobile-fps-controls {display:block}
+ #mobile-fps-controls {
+   position:fixed;inset:0;z-index:2;pointer-events:none;
+ }
+ #mobile-look-zone {
+   position:absolute;right:0;top:65px;bottom:0;width:54%;
+   pointer-events:auto;touch-action:none;
+ }
+ #mobile-joystick {
+   position:absolute;left:17px;bottom:calc(119px + env(safe-area-inset-bottom,0px));
+   width:124px;height:124px;border-radius:50%;
+   border:2px solid rgba(139,214,229,.55);
+   background:radial-gradient(circle,rgba(46,103,119,.28),rgba(9,21,35,.74));
+   box-shadow:0 0 0 6px rgba(4,16,27,.16),inset 0 0 30px rgba(57,134,162,.16);
+   pointer-events:auto;
+ }
+ #mobile-joystick::before,#mobile-joystick::after {
+   content:"";position:absolute;background:rgba(147,210,223,.22);
+   left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;
+ }
+ #mobile-joystick::before{width:1px;height:90%}
+ #mobile-joystick::after{width:90%;height:1px}
+ #mobile-stick-knob {
+   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+   width:53px;height:53px;border:1px solid rgba(203,243,247,.78);border-radius:50%;
+   background:radial-gradient(circle at 40% 35%,#47778c,#173349 80%);
+   box-shadow:0 3px 12px rgba(0,0,0,.65),inset 0 1px 5px rgba(255,255,255,.15);
+   pointer-events:none;
+ }
+ #mobile-actions {
+   position:absolute;right:12px;
+   bottom:calc(119px + env(safe-area-inset-bottom,0px));
+   display:grid;grid-template-columns:repeat(3,54px);
+   grid-template-rows:repeat(3,53px);gap:7px;
+   pointer-events:auto;
+ }
+ #mobile-actions button {
+   position:static;display:flex;align-items:center;justify-content:center;
+   width:100%;height:100%;min-width:0;min-height:0;padding:3px 2px;
+   border-radius:12px;border:1px solid rgba(154,216,232,.55);
+   background:rgba(9,25,40,.91);color:#e6f8fd;
+   font:800 9px 'JetBrains Mono',monospace;
+   line-height:1.15;text-align:center;
+   box-shadow:inset 0 1px 0 rgba(226,246,255,.1),0 4px 15px rgba(0,0,0,.33);
+   -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+   pointer-events:auto;
+ }
+ #mobile-actions button:active,#mobile-actions button[aria-pressed=true] {
+   background:rgba(33,101,121,.9);border-color:#b9edfa;color:white;
+ }
+ #mobile-actions #mobile-fire {
+   grid-column:3;grid-row:2 / 4;border-radius:23px;
+   border:2px solid #efb56d;background:rgba(106,42,31,.93);
+   color:#ffdbad;font-size:12px;
+ }
+ #mobile-actions #mobile-fire:active {background:#b5552e}
+ #mobile-actions #mobile-aim {grid-column:3;grid-row:1}
+ #mobile-actions #mobile-use {grid-column:2;grid-row:1}
+ #mobile-actions #mobile-reload {grid-column:2;grid-row:2}
+ #mobile-actions #mobile-weapon {grid-column:2;grid-row:3}
+ #mobile-actions #mobile-mine {grid-column:1;grid-row:2}
+ #mobile-actions #mobile-detonate {grid-column:1;grid-row:3}
+ #mobile-actions #btn-mobile-crouch {grid-column:1;grid-row:1}
+ #screen-hud .fixed.bottom-4 {
+   bottom:calc(7px + env(safe-area-inset-bottom,0px));
+ }
+ #screen-hud .fixed.bottom-4>div {padding:7px;width:auto;max-width:48vw}
+ #screen-hud .fixed.bottom-4>div:first-child{min-width:124px}
+ #screen-hud #hud-interact-prompt {
+   bottom:calc(87px + env(safe-area-inset-bottom,0px));
+   font-size:10px;max-width:68vw;
+ }
+ #screen-hud #pointer-lock-banner {display:none!important}
+}
+@media(pointer:coarse) and (max-width:640px) {
+ #mobile-joystick {
+   left:9px;width:104px;height:104px;
+   bottom:calc(119px + env(safe-area-inset-bottom,0px));
+ }
+ #mobile-stick-knob{width:45px;height:45px}
+ #mobile-actions {
+   right:7px;grid-template-columns:repeat(3,48px);
+   grid-template-rows:repeat(3,48px);gap:5px;
+ }
+ #mobile-actions button{font-size:8px}
+ #mobile-actions #mobile-fire{font-size:11px}
+}
+@media(pointer:coarse) and (max-height:460px) {
+ #mobile-actions {bottom:calc(67px + env(safe-area-inset-bottom,0px))}
+ #mobile-joystick {bottom:calc(75px + env(safe-area-inset-bottom,0px))}
+ #screen-hud .fixed.bottom-4>div {padding:5px}
+ #screen-hud #hud-interact-prompt {bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+}
+@media(pointer:coarse) and (orientation:portrait) {
+ #mobile-look-zone {width:53%;top:80px}
+}

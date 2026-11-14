@@ -50,6 +50,7 @@
     }
   </style>
   <link rel="stylesheet" href="src/menu-v2-3.css">
+  <link rel="stylesheet" href="src/mobile-controls-v2-4.css">
 </head>
 <body>
 
@@ -188,6 +189,7 @@
           <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">[R] / [CTRL ou C]</span> • Recarregar / Agachar</div>
           <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">[H]</span> • Mostrar / ocultar orientação de objetivos</div>
           <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">CONTROLE</span> • Analógicos, RT tiro, LT mira, X usar, Y recarregar, Menu pausa, LB/RB minas</div>
+          <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">CELULAR</span> • Esquerda: andar • Deslizar direita: mirar • Segurar ATIRAR • Botões USAR, RECAR., MIRA e MINAS</div>
         </div>
       </div>
 
@@ -285,7 +287,23 @@
 
     <!-- Estado da postura e botão para telas sensíveis ao toque -->
     <div id="hud-posture" class="fixed top-16 left-4 px-2 py-1 bg-slate-950/70 border border-white/10 rounded text-[10px] font-mono-tech text-slate-300">EM PÉ</div>
-    <button id="btn-mobile-crouch" type="button" aria-label="Agachar ou levantar" aria-pressed="false" class="mobile-crouch-button fixed bottom-32 right-4 z-30 items-center justify-center min-w-24 min-h-12 px-4 py-2 rounded-xl bg-sky-950/90 border border-sky-400 text-sky-200 font-bold text-xs pointer-events-auto touch-manipulation">AGACHAR</button>
+    <!-- Controles FPS touch: dois dedos (movimento e mira), botões de ação. -->
+    <div id="mobile-fps-controls" role="group" aria-label="Controles de toque do jogo">
+      <div id="mobile-look-zone" aria-label="Deslizar para mirar"></div>
+      <div id="mobile-joystick" aria-label="Joystick virtual para movimentar">
+        <div id="mobile-stick-knob" aria-hidden="true"></div>
+      </div>
+      <div id="mobile-actions">
+        <button id="btn-mobile-crouch" type="button" aria-label="Agachar ou levantar" aria-pressed="false" class="mobile-crouch-button">AGACHAR</button>
+        <button id="mobile-use" type="button" aria-label="Interagir ou entrar no veículo">USAR</button>
+        <button id="mobile-aim" type="button" aria-label="Ativar ou desativar mira" aria-pressed="false">MIRA</button>
+        <button id="mobile-mine" type="button" aria-label="Plantar mina remota">MINA</button>
+        <button id="mobile-reload" type="button" aria-label="Recarregar arma">RECAR.</button>
+        <button id="mobile-detonate" type="button" aria-label="Detonar minas remotas">DETONAR</button>
+        <button id="mobile-weapon" type="button" aria-label="Trocar arma">ARMA</button>
+        <button id="mobile-fire" type="button" aria-label="Atirar; segure para disparo contínuo">ATIRAR</button>
+      </div>
+    </div>
 
     <div id="silo-countdown" class="hidden fixed top-28 right-4 z-20 px-3 py-2 rounded-xl bg-slate-950/90 border-2 border-emerald-500 font-mono-tech text-sm font-bold tracking-widest text-white tabular-nums pointer-events-none">EVACUAÇÃO 07:00</div>
     <div id="frigate-bomb-progress" class="hidden fixed top-28 right-4 z-20 px-3 py-2 rounded-xl bg-slate-950/95 border border-red-500 font-mono-tech text-sm font-bold text-red-200 tabular-nums pointer-events-none">DESARMANDO BOMBA: 0%</div>
@@ -505,5 +523,6 @@
   <script src="src/scenery-v2-1.js" defer></script>
   <script src="src/doctor-model.js" defer></script>
   <script src="src/menu-ui-v2-3.js" defer></script>
+  <script src="src/mobile-controls-v2-4.js" defer></script>
 </body>
 </html>
