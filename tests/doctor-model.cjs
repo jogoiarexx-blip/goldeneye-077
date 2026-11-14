@@ -26,7 +26,6 @@ module.exports=Promise.all(['dra','scientist'].map(async name=>{
  const mixer=new THREE.AnimationMixer(gltf.scene),action=mixer.clipAction(gltf.animations.find(a=>a.name==='Walking'));action.play();mixer.update(.01);
  gltf.scene.updateMatrixWorld(true);
  let skin;gltf.scene.traverse(o=>{if(o.isSkinnedMesh)skin=o});
- console.log('ANIM DIAGNOSTIC',name,'bones',skin.skeleton.bones.map(b=>b.name).slice(0,100),'clips',gltf.animations.map(a=>({name:a.name,duration:a.duration,tracks:a.tracks.slice(0,6).map(t=>t.name)})));
  const first=skin.skeleton.bones.map(b=>b.quaternion.clone());mixer.update(.25);gltf.scene.updateMatrixWorld(true);skin.skeleton.update();
  assert.ok(first.some((q,i)=>1-Math.abs(q.dot(skin.skeleton.bones[i].quaternion))>1e-5),'walking changes bones');
  for(let i=0;i<skin.geometry.attributes.position.count;i+=50){const point=new THREE.Vector3().fromBufferAttribute(skin.geometry.attributes.position,i);skin.boneTransform(i,point);assert.ok(point.toArray().every(Number.isFinite));assert.ok(point.length()<5,'skin remains bounded')}

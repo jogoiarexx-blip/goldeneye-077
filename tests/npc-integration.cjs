@@ -39,7 +39,8 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
  assert.equal(woman.modelVariant,'Medica_Otimizada_Walk_Menos25MB');
  assert.equal(woman.visual.model.name,'Pesquisadora-GLB');
  assert.ok(woman.visual.actions.Walking,'animacao Walk deve funcionar');
- assert.equal(woman.visual.actions.Walking.paused,true,'andada parada quando imóvel');
+ assert.equal(woman.visual.actions.Walking.paused,false,'Walk deve rodar em pose natural de repouso');
+ assert.equal(woman.visual.current,woman.visual.actions.Walking);
  assert.equal(contact.modelVariant,'dra','a Dra. mantém o decodificador');
  assert.equal(contact.id,'dr_doak');
  assert.equal(contact.role,'doak');assert.equal(contact.modelStatus,'ready');
@@ -62,10 +63,21 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
     'Actual skinned vertices must be life-size: '+npc.id);
  }
  const game=new Game();game.appState='PLAYING';game.levelBuilder=builder;game.player={pos:new THREE.Vector3(0,1.65,0)};
- game.update(.05);assert.equal(contact.visual.current,contact.visual.actions.Talk);
+ game.update(.05);
+ assert.equal(contact.visual.motionState,'Talking');
+ assert.equal(contact.visual.current,contact.visual.actions.Walking,
+  'Dra. deve manter pose natural no lugar da pose T');
+ assert.ok(contact.visual.current.timeScale>0);
  const t=contact.visual.mixer.time;game.appState='PAUSED';game.update(.2);assert.equal(contact.visual.mixer.time,t);
- game.appState='PLAYING';game.player.pos.set(100,1.65,0);game.update(.05);assert.equal(contact.visual.current,contact.visual.actions.Idle);
- contact.mesh.position.x+=.1;game.update(.05);assert.equal(contact.visual.current,contact.visual.actions.Walking);
+ game.appState='PLAYING';game.player.pos.set(100,1.65,0);game.update(.05);
+ assert.equal(contact.visual.motionState,'Idle');
+ assert.equal(contact.visual.current,contact.visual.actions.Walking);
+ assert.equal(contact.visual.actions.Walking.paused,false);
+ assert.ok(contact.visual.actions.Walking.timeScale<.2);
+ contact.mesh.position.x+=.1;game.update(.05);
+ assert.equal(contact.visual.motionState,'Walking');
+ assert.equal(contact.visual.current,contact.visual.actions.Walking);
+ assert.equal(contact.visual.actions.Walking.timeScale,1);
  // Regression: GLB animations or accidental runtime scaling must not create
  // 2x / 5x scientists and each clone keeps the exact same target height.
  a.visual.actor.scale.multiplyScalar(5);
@@ -80,7 +92,8 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
  assert.equal(a.visual.targetHeight,1.72);
  assert.equal(b.visual.targetHeight,1.72);
  assert.equal(woman.visual.targetHeight,1.72);
- assert.equal(woman.visual.actions.Walking.paused,true);
+ assert.equal(woman.visual.actions.Walking.paused,false);
+ assert.equal(woman.visual.motionState,'Idle');
  assert.equal(a.visual.actor.parent,a.visual.model,'Independent scale holder');
  assert.ok(a.visual.model.scale.x<b.visual.model.scale.x,'Animation root cannot override scale holder');
  contact.dead=true;const deathTime=contact.visual.mixer.time;game.update(.05);assert.equal(contact.visual.mixer.time,deathTime);

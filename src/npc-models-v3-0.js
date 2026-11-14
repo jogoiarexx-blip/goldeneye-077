@@ -1,4 +1,4 @@
-/** GoldenEye 077 v3.1: laboratory scientists plus female researcher Meshy. */
+/** GoldenEye 077 v3.2: natural skeletal locomotion for all laboratory NPCs. */
 (() => {
   'use strict';
   const WORLD=DamLevelBuilder.prototype;
@@ -134,14 +134,17 @@
     if(idle)actions.Idle=mixer.clipAction(idle);
     if(talk)actions.Talk=mixer.clipAction(talk);
     if(walk)actions.Walking=mixer.clipAction(walk);
+    // Idle clips from these Meshy exports leave the arms in a T pose.
+    // Use their authored walking skeleton as a natural standing base pose:
+    // very slow gait at rest and normal speed when NPCs move.
     const walkOnlyIdle=!actions.Idle && !!actions.Walking;
-    if(walkOnlyIdle){
-      // Keep a natural pose when stationary instead of leaving the GLB in T pose.
+    if(actions.Walking){
       const action=actions.Walking;
-      action.play();
-      action.time=Math.min((walk.duration||1)*.25,.4);
-      action.paused=true;
-      mixer.update(0);
+      action.reset().play();
+      action.time=Math.min((walk.duration||1)*.24,.38);
+      action.timeScale=.14;
+      action.paused=false;
+      mixer.update(.02);
     }else{
       actions.Idle?.play();
       mixer.update(.02);
@@ -161,8 +164,8 @@
     for(const child of [...npc.mesh.children]){npc.mesh.remove(child);dispose(child)}
     npc.mesh.add(model);npc.modelStatus='ready';
     npc.visual={
-      model,actor,mixer,actions,current:actions.Idle||(walkOnlyIdle?actions.Walking:null),
-      walkOnlyIdle,lastPos:npc.mesh.position.clone(),
+      model,actor,mixer,actions,current:actions.Walking||actions.Idle||null,
+      walkOnlyIdle,motionState:'Idle',lastPos:npc.mesh.position.clone(),
       targetHeight,scaleCheckAge:0
     };
     npc.modelVariant=variant;
@@ -220,7 +223,7 @@
     const result=build.apply(this,arguments);this.loadDoctor(id);return result;
   };
   if(typeof window!=='undefined')window.GoldenEyeNPCScale={
-    version:'3.1',visualBounds,stabilizeHeight,
+    version:'3.2',visualBounds,stabilizeHeight,
     researcherModel:RESEARCHER_MODEL,researcherIds:Array.from(RESEARCHER_IDS),
     scientistHeight:SCIENTIST_HEIGHT,doctorHeight:DOCTOR_HEIGHT
   };
@@ -235,15 +238,18 @@
       if(!v||v.released||npc.dead||npc.corpseRemoved)continue;
       const moving=npc.mesh.position.distanceToSquared(v.lastPos)>.00001;
       const close=npc.position.distanceTo(this.player.pos)<3.5;
-      const action=v.actions[moving?'Walking':close?'Talk':'Idle']||v.actions.Idle;
-      if(v.walkOnlyIdle){
-        // If the female file contains only a Walk clip, freeze its pose
-        // while idle and resume the exact same action while moving.
-        v.actions.Walking.paused=!moving;
-      }else if(action&&action!==v.current){
-        v.current?.fadeOut(.2);
-        action.reset().fadeIn(.2).play();
+      // Prefer the authored standing/walking bone pose over the T-shaped
+      // "Idle" exported by Meshy; avoid restarting Walk every frame.
+      const action=v.actions.Walking || v.actions[moving?'Walking':close?'Talk':'Idle'] || v.actions.Idle;
+      v.motionState=moving?'Walking':close?'Talking':'Idle';
+      if(action&&action!==v.current){
+        v.current?.fadeOut(.12);
+        action.reset().fadeIn(.12).play();
         v.current=action;
+      }
+      if(action){
+        action.paused=false;
+        action.timeScale=moving?1.0:close?.17:.11;
       }
       v.mixer.update(step);
       v.scaleCheckAge=(v.scaleCheckAge||0)+step;
