@@ -43,6 +43,9 @@ class Mesh extends Object3D{
  clone(){const c=new Mesh(this.geometry,this.material);return c}
 }
 class Line extends Mesh{}
+class Sprite extends Object3D{
+ constructor(material){super();this.material=material}
+}
 class Tex{
  constructor(canvas){this.canvas=canvas;this.repeat={set(x,y){this.x=x;this.y=y}};this.offset={};}
 }
@@ -64,7 +67,7 @@ const document={
    return {fillStyle:'',lineWidth:1,
     createImageData(w,h){return {data:new Uint8ClampedArray(w*h*4)}},
     putImageData(){},strokeRect(){},beginPath(){},moveTo(){},lineTo(){},
-    stroke(){},fillRect(){}};
+    stroke(){},fillRect(){},clearRect(){},fillText(){}};
   }};
  },
  getElementById(key){
@@ -74,13 +77,13 @@ const document={
  }
 };
 const THREE={
- Vector3:V,Group:Object3D,Object3D,Mesh,Line,Points:Mesh,
+ Vector3:V,Group:Object3D,Object3D,Mesh,Sprite,Line,Points:Mesh,
  BoxGeometry:Geometry,SphereGeometry:Geometry,CylinderGeometry:Geometry,
  ConeGeometry:Geometry,PlaneGeometry:Geometry,RingGeometry:Geometry,
- TorusGeometry:Geometry,
+ TorusGeometry:Geometry,OctahedronGeometry:Geometry,
  BufferGeometry:Geometry,BufferAttribute:BufAttr,
  MeshStandardMaterial:Mat,MeshBasicMaterial:Mat,LineBasicMaterial:Mat,
- PointsMaterial:Mat,CanvasTexture:Tex,Color,HemisphereLight:Light,
+ PointsMaterial:Mat,SpriteMaterial:Mat,CanvasTexture:Tex,Color,HemisphereLight:Light,
  DirectionalLight:Light,PointLight:Light,DoubleSide:2,RepeatWrapping:100,
  MathUtils:{lerp:(a,b,t)=>a+(b-a)*t}
 };
@@ -244,6 +247,69 @@ const runwayTower=level.levelGroup.children.find(x=>
 assert.ok(runwayTower&&Math.abs(runwayTower.position.y-5.2)<.01,
   'Torre da Runway deve ficar apoiada no teto a 5.2m');
 assert.equal(level.damJumpAnchor,null,'Bungee não pode aparecer na Runway');
+
+// Auditoria da 3ª fase: o único caminho de carro e a pé deve cruzar o
+// portão, não existir passagem pela esquerda/direita.
+const runwayGate=level.gates.find(x=>x.id==='run_gate_1');
+assert.ok(runwayGate, 'Portão da pista existente');
+const runwaySwitch=level.interactables.find(x=>x.id==='open_run_gate_1');
+assert.ok(runwaySwitch, 'Leitor do portão presente');
+assert.ok(level.colliders.some(x=>x.minX<-24.4&&x.maxX>=-2.91&&
+ x.minZ<=27.5&&x.maxZ>=27.5),'Parede esquerda deve tocar cerca e portão');
+assert.ok(level.colliders.some(x=>x.maxX>24.4&&x.minX<=2.91&&
+ x.minZ<=27.5&&x.maxZ>=27.5),'Parede direita deve tocar cerca e portão');
+assert.ok(!level.colliders.some(x=>x.minZ<=19.5&&x.maxZ>=19.5&&
+ x.minX<=15.5&&x.maxX>=15.5&&x.minZ<=27.5&&x.maxZ>=27.5),
+ 'Caminhão não deve atravessar a barreira');
+function runwayReach(open){
+ const bounds=level.bounds,step=.5;
+ const nx=Math.floor((bounds.maxX-bounds.minX)/step)+1;
+ const nz=Math.floor((bounds.maxZ-bounds.minZ)/step)+1;
+ const seen=new Uint8Array(nx*nz),queue=[];
+ const blocked=level.colliders.filter(c=>!(open&&c===runwayGate.collider));
+ function push(ix,iz){
+  if(ix<0||iz<0||ix>=nx||iz>=nz)return;
+  const key=iz*nx+ix;if(seen[key])return;
+  const x=bounds.minX+ix*step,z=bounds.minZ+iz*step,r=.48;
+  if(blocked.some(c=>c.minX<=c.maxX&&c.maxY>0.4&&c.minY<1.75&&
+   x+r>c.minX&&x-r<c.maxX&&z+r>c.minZ&&z-r<c.maxZ))return;
+  seen[key]=1;queue.push([ix,iz]);
+ }
+ push(Math.round((0-bounds.minX)/step),
+  Math.round((41-bounds.minZ)/step));
+ for(let n=0;n<queue.length;n++){
+  const [x,z]=queue[n];
+  push(x+1,z);push(x-1,z);push(x,z+1);push(x,z-1);
+ }
+ return {count:queue.length,can(x,z,radius=1.4){
+  return queue.some(([ix,iz])=>
+   Math.hypot(bounds.minX+ix*step-x,bounds.minZ+iz*step-z)<radius);
+ }};
+}
+const blockedRunway=runwayReach(false);
+assert.ok(blockedRunway.can(runwaySwitch.position.x,runwaySwitch.position.z),
+ 'Jogador deve alcançar interruptor antes do portão');
+assert.equal(blockedRunway.can(0,20),false,
+ 'Portão fechado não pode ser contornado');
+assert.equal(blockedRunway.can(22,20),false,
+ 'Borda direita não pode contornar barreira');
+assert.equal(blockedRunway.can(-22,20),false,
+ 'Borda esquerda não pode contornar barreira');
+const openRunway=runwayReach(true);
+assert.ok(openRunway.can(0,20),'Portão aberto precisa liberar corredor central');
+assert.ok(openRunway.can(0,-10),'Objetivo atrás do portão continua acessível');
+
+// Os objetos de coleta agora são modelos, e não simples caixas coloridas.
+const ammoIcon=level.pickups.find(p=>p.type==='ammo');
+const armorIcon=level.pickups.find(p=>p.type==='armor');
+assert.ok(ammoIcon&&armorIcon,'Coletas de munição e colete existentes');
+for(const p of [ammoIcon,armorIcon]){
+ assert.ok(p.mesh.children.length>7,'Pickup tridimensional detalhado');
+ assert.ok(p.mesh.children.some(x=>x instanceof Sprite),
+  'Pickup deve exibir um rótulo legível que acompanha a câmera');
+}
+assert.ok(level.pickupBadges?.ammo&&level.pickupBadges?.armor,
+ 'Texturas dos ícones devem ser reutilizadas por tipo');
 // Teste global de descarte: geometrias/materiais/texturas compartilhadas
 // precisam ser liberados somente uma vez, não a cada mesh do mesmo material.
 const disposed={geometry:0,material:0,texture:0};
