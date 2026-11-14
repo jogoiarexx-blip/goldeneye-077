@@ -257,9 +257,10 @@ for(const gate of game.levelBuilder.gates){
   gate.isOpen=true;gate.progress=1;
   gate.collider.minX=9999;gate.collider.maxX=9999;
 }
-for(let i=0;i<1600 && state.natalya.position.z>-137;i++)game.update(.05);
-assert.ok(state.natalya.position.z<=-137,
-  'Escolta travou, posição: '+JSON.stringify(state.natalya.position)+
+const exitPos=find('b2_escape_with_natalya').position;
+for(let i=0;i<1600 && state.natalya.position.distanceTo(exitPos)>4.8;i++)game.update(.05);
+assert.ok(state.natalya.position.distanceTo(exitPos)<=4.8,
+  'Escolta não alcançou o raio da extração, posição: '+JSON.stringify(state.natalya.position)+
   ', waypoint: '+state.routeIndex);
 use('b2_escape_with_natalya');
 assert.equal(game.appState,'CUTSCENE_OUTRO','Natalya deve escapar com 007');
