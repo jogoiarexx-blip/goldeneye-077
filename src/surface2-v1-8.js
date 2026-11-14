@@ -133,8 +133,9 @@
 
     // Linha de segurança física: duas cercas + portão central.
     // A abertura não pode ser contornada nas extremidades do terreno.
-    this.addBox(-25.1,1.33,-100,40.8,2.66,0.62,steel,true);
-    this.addBox(25.1,1.33,-100,40.8,2.66,0.62,steel,true);
+    // Os bloqueios avançam além do limite X do nível, sem desvio pela borda.
+    this.addBox(-27,1.33,-100,45,2.66,0.62,steel,true);
+    this.addBox(27,1.33,-100,45,2.66,0.62,steel,true);
     this.addSecurityGate('s2_gate',0,-100,9.5,steel,amber);
     const reader = new THREE.Mesh(new THREE.BoxGeometry(0.46,0.66,0.23),cyan.clone());
     reader.position.set(5.2,1.38,-93);
@@ -173,8 +174,8 @@
       light.castShadow = false;
       const target = new THREE.Object3D();
       target.position.set(x,0,z-10);
-      this.levelGroup.add(target,light,light.target);
       light.target = target;
+      this.levelGroup.add(target,light);
       state.searchlights.push({light,target,x,z,head});
     }
 
