@@ -37,6 +37,20 @@
 
     const body = cloneVisual(template);
     body.name = 'meshy-soldier-fbx-optimized';
+    // Scale and center the rigid, textured mesh, never bind estimated
+    // skeletal weights (which broke chest/arms in Facility screenshots).
+    body.updateMatrixWorld(true);
+    const bounds = new THREE.Box3().setFromObject(body);
+    const height = bounds.max.y - bounds.min.y;
+    if (Number.isFinite(height) && height > 0.01) {
+      const factor = 1.78 / height;
+      body.scale.multiplyScalar(factor);
+      body.position.set(
+        -(bounds.min.x + bounds.max.x) * .5 * factor,
+        -bounds.min.y * factor,
+        -(bounds.min.z + bounds.max.z) * .5 * factor
+      );
+    }
     const rig = new THREE.Group();
     rig.name = 'guarda-meshy-especial';
     rig.add(body);

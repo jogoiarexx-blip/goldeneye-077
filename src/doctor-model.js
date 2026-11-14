@@ -24,12 +24,61 @@
     });
     return model;
   }
+  // Identical standing height for every scientist (GLB and fallback).
+  // World groups keep their original x/z/y and interaction locations.
+  const SCIENTIST_HEIGHT=1.72;
+  const DOCTOR_HEIGHT=1.75;
+  function normalizeFallback(npc){
+    if(npc.role!=='scientist'||npc.scientistFallbackReady)return;
+    const anchor=new THREE.Group();
+    anchor.name='scientist-fallback-normalized';
+    for(const child of [...npc.mesh.children]){
+      npc.mesh.remove(child);
+      anchor.add(child);
+    }
+    anchor.updateMatrixWorld(true);
+    const box=new THREE.Box3().setFromObject(anchor);
+    const size=box.getSize(new THREE.Vector3());
+    if(Number.isFinite(size.y)&&size.y>0.01){
+      const factor=SCIENTIST_HEIGHT/size.y;
+      anchor.scale.setScalar(factor);
+      anchor.position.set(
+        -(box.min.x+box.max.x)*.5*factor,
+        -box.min.y*factor,
+        -(box.min.z+box.max.z)*.5*factor
+      );
+    }
+    npc.mesh.add(anchor);
+    npc.scientistFallbackReady=true;
+  }
+  // Skin animations may alter the actual visible height after loading. A
+  // periodic check (max once per 0.8 s / NPC) corrects extreme scale drift
+  // without doing an expensive animated bounds check on every frame.
+  function stabilizeHeight(npc){
+    const visual=npc.visual;
+    if(!visual||visual.released||!visual.model||!visual.targetHeight)return;
+    const model=visual.model;
+    model.updateMatrixWorld(true);
+    const box=new THREE.Box3().setFromObject(model);
+    const height=box.max.y-box.min.y;
+    if(!Number.isFinite(height)||height<0.01)return;
+    const target=visual.targetHeight;
+    if(Math.abs(height-target)>target*.06){
+      const factor=Math.max(.05,Math.min(20,target/height));
+      model.scale.multiplyScalar(factor);
+      model.updateMatrixWorld(true);
+      const after=new THREE.Box3().setFromObject(model);
+      const worldBase=npc.mesh.position.y;
+      model.position.y+=worldBase-after.min.y;
+    }
+  }
   function attach(npc,gltf){
     const model=cloneActor(gltf.scene);
     model.updateMatrixWorld(true);
     const box=new THREE.Box3().setFromObject(model),size=box.getSize(new THREE.Vector3());
     if(!Number.isFinite(size.y)||size.y<=0){npc.modelStatus='fallback';return}
-    const scale=1.75/size.y;
+    const targetHeight=npc.role==='scientist'?SCIENTIST_HEIGHT:DOCTOR_HEIGHT;
+    const scale=targetHeight/size.y;
     model.scale.multiplyScalar(scale);
     model.position.set(-(box.min.x+box.max.x)*.5*scale,-box.min.y*scale,-(box.min.z+box.max.z)*.5*scale);
     model.name=npc.id==='dr_doak'?'Dra-GLB':'Scientist-GLB';
@@ -46,7 +95,12 @@
       if(clip)actions[name]=mixer.clipAction(clip);
     }
     actions.Idle?.play();mixer.update(.001);
-    npc.visual={model,mixer,actions,current:actions.Idle,lastPos:npc.mesh.position.clone()};
+    npc.visual={
+      model,mixer,actions,current:actions.Idle,
+      lastPos:npc.mesh.position.clone(),
+      targetHeight,scaleCheckAge:0
+    };
+    stabilizeHeight(npc);
     // Corpses can leave levelGroup before clear(); stop and release their skeleton.
     const cleanup=()=>{
       if(npc.visual?.released)return;
@@ -58,7 +112,10 @@
     npc.mesh.addEventListener('removed',cleanup);
   }
   WORLD.loadDoctor=function(id){
-    if(!['facility','silo'].includes(id)||typeof THREE.GLTFLoader!=='function')return;
+    if(!['facility','silo'].includes(id))return;
+    // Scientists are also correctly proportioned while GLB downloads or fails.
+    for(const npc of this.npcs||[])normalizeFallback(npc);
+    if(typeof THREE.GLTFLoader!=='function')return;
     const level=this.levelGroup;
     this.npcTemplates=[];
     const targets=[
@@ -108,7 +165,13 @@
       const close=npc.position.distanceTo(this.player.pos)<3.5;
       const action=v.actions[moving?'Walking':close?'Talk':'Idle']||v.actions.Idle;
       if(action&&action!==v.current){v.current?.fadeOut(.2);action.reset().fadeIn(.2).play();v.current=action}
-      v.mixer.update(step);v.lastPos.copy(npc.mesh.position);
+      v.mixer.update(step);
+      v.scaleCheckAge=(v.scaleCheckAge||0)+step;
+      if(v.scaleCheckAge>=.8){
+        v.scaleCheckAge=0;
+        stabilizeHeight(npc);
+      }
+      v.lastPos.copy(npc.mesh.position);
     }
     return result;
   };

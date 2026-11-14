@@ -23,7 +23,13 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
  doctorRequest.done(doctor);scientistRequest.done(scientist);
  const contact=builder.npcs[0],a=builder.npcs[1],b=builder.npcs[2];
  assert.equal(contact.role,'doak');assert.equal(contact.modelStatus,'ready');
- for(const npc of builder.npcs){npc.mesh.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(npc.mesh);assert.ok(Math.abs(box.min.y)<.02);assert.ok(Math.abs(box.max.y-1.75)<.02)}
+ for(const npc of builder.npcs){
+  npc.mesh.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(npc.mesh);
+  const expected=npc.role==='scientist'?1.72:1.75;
+  assert.ok(Math.abs(box.min.y)<.025,'feet on floor: '+npc.id);
+  assert.ok(Math.abs(box.max.y-expected)<.035,'uniform actor height: '+npc.id);
+ }
  let skinA,skinB;a.visual.model.traverse(o=>{if(o.isSkinnedMesh)skinA=o});b.visual.model.traverse(o=>{if(o.isSkinnedMesh)skinB=o});
  assert.notEqual(skinA.skeleton.bones[0],skinB.skeleton.bones[0],'independent skeletons');
  assert.equal(skinA.geometry,skinB.geometry,'shared geometry');assert.equal(skinA.material.map,skinB.material.map,'shared textures');
@@ -32,12 +38,27 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
  const t=contact.visual.mixer.time;game.appState='PAUSED';game.update(.2);assert.equal(contact.visual.mixer.time,t);
  game.appState='PLAYING';game.player.pos.set(100,1.65,0);game.update(.05);assert.equal(contact.visual.current,contact.visual.actions.Idle);
  contact.mesh.position.x+=.1;game.update(.05);assert.equal(contact.visual.current,contact.visual.actions.Walking);
+ // Regression: GLB animations or accidental runtime scaling must not create
+ // 2x / 5x scientists and each clone keeps the exact same target height.
+ a.visual.model.scale.multiplyScalar(5);
+ for(let i=0;i<20;i++)game.update(.05);
+ for(const npc of [a,b]){
+  npc.mesh.updateMatrixWorld(true);
+  const actual=new THREE.Box3().setFromObject(npc.mesh);
+  assert.ok(Math.abs(actual.max.y-actual.min.y-1.72)<.05,'scientist height stable: '+npc.id);
+ }
+ assert.equal(a.visual.targetHeight,1.72);assert.equal(b.visual.targetHeight,1.72);
  contact.dead=true;const deathTime=contact.visual.mixer.time;game.update(.05);assert.equal(contact.visual.mixer.time,deathTime);
  let disposed=0;skinA.geometry.addEventListener('dispose',()=>disposed++);
  builder.levelGroup.remove(a.mesh);assert.equal(a.visual.released,true);assert.equal(disposed,0,'corpse does not dispose resources still used by other scientists');
  builder.clear();assert.equal(disposed,1,'mission clear releases shared resources once');
  const staleBuilder=new Builder();staleBuilder.build('silo');const old=pending[pending.length-1];staleBuilder.build('dam');
  const orphan=new THREE.Group(),mesh=new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshStandardMaterial());orphan.add(mesh);let released=0;mesh.geometry.addEventListener('dispose',()=>released++);old.done({scene:orphan,animations:[]});assert.equal(released,1);
- const fallback=new Builder();fallback.build('facility');pending[pending.length-1].fail();assert.equal(fallback.npcs[1].modelStatus,'fallback');assert.equal(fallback.npcs[1].mesh.children.length,1);
+ const fallback=new Builder();fallback.build('facility');pending[pending.length-1].fail();
+ assert.equal(fallback.npcs[1].modelStatus,'fallback');
+ assert.equal(fallback.npcs[1].mesh.children.length,1);
+ const fb=new THREE.Box3().setFromObject(fallback.npcs[1].mesh);
+ assert.ok(Math.abs(fb.max.y-fb.min.y-1.72)<.02,'scientist fallback must be same height');
+ assert.ok(Math.abs(fb.min.y)<.02,'fallback feet on floor');
  console.log('OK NPC integration: contact, independent skinning, shared resources, pause, walk/talk/idle, death, stale load and fallback.');
 }).catch(e=>{console.error(e);process.exitCode=1});
