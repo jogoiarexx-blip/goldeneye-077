@@ -12,6 +12,18 @@ Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy 
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
 
+## Runway — portão e itens visuais (v2.0.3)
+
+**Correção da terceira missão (Runway) a partir de captura enviada pelo jogador:**
+
+- **Portão contornável resolvido:** antes, `run_gate_1` ocupava só a faixa central em `Z=27.5`, deixando dois desvios livres entre o portão e os muros do campo aéreo. Adicionadas duas seções sólidas entre o batente e as cercas laterais, atravessando toda a largura transitável; a abertura central mantém **5,8 unidades**, com leitura por **E** no console do lado de entrada, cadeado destrutível e animação deslizante original.
+- **Sem objetos atravessando a nova barreira:** caminhão militar movido para depois do checkpoint. Nova travessa superior, faixa refletiva e moldura do portão tornam claro onde abrir.
+- **Itens reconhecíveis em 3D:** o coletável **MUNIÇÃO** agora é uma caixa militar com tampa, fecho e cartuchos de latão; o **COLETE** agora tem placas, alças, ombreiras e símbolo, em vez de um cubo azul. Ambos usam halo no chão e etiqueta que fica orientada para a câmera. A identidade visual é aplicada por `addPickup()` a todas as fases, sem alterar raio, quantidade ou efeitos de coleta. Texturas de etiquetas são compartilhadas por tipo e liberadas quando o mapa é descartado.
+- **Orientação contextual:** quando `run_gate_1` está fechado, o guia indica o controle do portão antes de apontar ao objetivo seguinte, deixando claro por onde o jogador precisa avançar.
+- **Teste de rota real:** `tests/dam-rework.cjs` utiliza busca de caminho com colisores (AABB) e raio de jogador para verificar que a porta fechada impede passagem pelo centro **e pelos dois lados**, e a porta aberta permite atingir todos os objetivos relevantes e os pickups existentes. Os testes rodam em `node tests/check.cjs`.
+
+**Validação:** verificações automáticas concluídas; a experiência final ainda exige teste visual manual no navegador com WebGL.
+
 ## Auditoria de cenários — correção de estrutura flutuante (v2.0.2)
 
 Correção da primeira fase a partir de uma captura de tela enviada pelo jogador:
