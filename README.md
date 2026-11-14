@@ -12,6 +12,20 @@ Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy 
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
 
+## Facility — auditoria de cenário e circulação (v2.0.4)
+
+Revisão estrutural da **segunda fase**, mantendo objetivos, NPCs e três dificuldades do GDD:
+
+- **Banheiros corrigidos:** as quatro portas das cabines agora se ligam às divisórias por dobradiças visíveis e ficam entreabertas, sem colisores invisíveis. Os dois espelhos e os lavatórios estão fixados em uma parede de apoio real atrás das pias; antes o vidro ficava suspenso sem suporte.
+- **Laboratórios:** molduras físicas decorativas nas duas janelas de observação, alinhadas ao vão existente e sem criar obstruções na área de caminhada. Bancadas e objetos de laboratório originais preservados.
+- **Sala de controle:** a janela para a câmara de engarrafamento era desenhada sobre uma parede inteiriça. A parede foi dividida em painéis laterais, peitoril e verga. A abertura permite enxergar o setor, mas a base conserva a colisão física, impedindo atravessá-la.
+- **Passarelas industriais:** a estrutura suspensa da câmara de engarrafamento agora tem **seis pilares** ancorados no piso, travessas e guarda-corpos sem volumes invisíveis. Os itens, cinco tanques, guardas e 006 permanecem alcançáveis.
+- **Paredes e teto:** frisos de acabamento encaixados nas paredes e luminárias fixadas à face inferior do teto, sem interferir nas tubulações. Materiais reutilizados em malhas leves, sem novas texturas externas ou sombras adicionais.
+- **Progressão:** o guia de objetivos aponta para o leitor do portão 1 enquanto fechado; depois da liberação, indica o portão 2 antes das tarefas que exigem passar para a câmara. Dr. Doak e o decodificador continuam respeitando as regras de cada dificuldade.
+- **Regressão e navegação:** `tests/facility-audit.cjs` constrói o cenário real e percorre uma malha de movimento de 0,5m com raio de colisão de 0,48m. Confirma bloqueio dos dois portões fechados, acesso aos leitores, Doak, 006, saída, todos os NPCs, itens e pontos de patrulha após abertura. Também verifica as colunas, o apoio dos espelhos, a abertura real da janela e a limpeza ao trocar de missão. Executado automaticamente em `node tests/check.cjs`.
+
+**Nota:** os testes de geometria e colisão são automatizados; a conferência visual completa com WebGL em PC e celular continua recomendada.
+
 ## Runway — portão e itens visuais (v2.0.3)
 
 **Correção da terceira missão (Runway) a partir de captura enviada pelo jogador:**
@@ -34,7 +48,7 @@ Correção da primeira fase a partir de uma captura de tela enviada pelo jogador
 - **Otimização comum a todas as missões:** `DamLevelBuilder.clear()` agora descarta geometrias, materiais e texturas da fase anterior quando o jogador reinicia ou muda de missão. Os recursos compartilhados são liberados uma única vez, sem afetar os modelos do jogador e das armas.
 - **Testes preventivos:** `tests/dam-rework.cjs`, chamado por `node tests/check.cjs`, confere a altura das três torres na Dam, a torre de Runway, a ausência dos grandes cubos, as colisões da plataforma de salto, a limpeza ao entrar em Facility/Runway e a liberação de memória.
 
-Os testes simulados aprovam estrutura e lógica; uma conferência visual com WebGL real ainda é necessária. O trabalho visual detalhado foi feito **em Dam**; a auditoria estética de cada uma das outras fases fica para atualizações seguintes.
+Os testes simulados aprovam estrutura e lógica; uma conferência visual com WebGL real ainda é necessária. O trabalho visual detalhado começou em **Dam** e continuou em **Runway (v2.0.3)** e **Facility (v2.0.4)**. As demais missões podem receber auditorias semelhantes.
 
 ## Melhorias da primeira missão — Dam v2.0.1
 
