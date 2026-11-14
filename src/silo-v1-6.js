@@ -248,6 +248,9 @@
 
   WORLD.build=function(mission='dam'){
     if(mission!==ID){this.siloState=null;return oldBuild.call(this,mission)}
+    // Descarta referências de efeitos de fases anteriores ao entrar no Silo.
+    this.bunker1=null;
+    this.surface1=null;
     this.clear();
     this.buildSiloLevel();
     this.scene.background=new THREE.Color(0x303b4a);
