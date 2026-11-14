@@ -1,6 +1,6 @@
 # GoldenEye 007 Remastered — protótipo não oficial
 
-Protótipo de FPS de espionagem para navegador. Contém **nove missões**: Dam, Facility, Runway, Surface 1, Bunker 1, Silo, Frigate, Surface 2 e Bunker 2, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
+Protótipo de FPS de espionagem para navegador. Contém **dez missões**: Dam, Facility, Runway, Surface 1, Bunker 1, Silo, Frigate, Surface 2, Bunker 2 e Statue, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
 
 ## Jogar pelo GitHub Pages
 
@@ -11,6 +11,21 @@ O repositório está configurado para publicar automaticamente da branch `main`,
 Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy from a branch**, **Branch: main**, **Folder: /(root)**. Veja o status em **Actions → pages build and deployment**. A página `404.html` oferece uma rota de volta para o jogo quando um endereço interno antigo é acessado.
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
+
+## Missão 10 — Statue (v2.0): Parque das Estátuas
+
+**St. Petersburg — investigação no parque noturno.** Nova fase 3D procedural baseada na seção 7.10 do GDD: parque extenso com 12 esculturas de pedra e bronze em pedestais, monumento/obelisco, ruínas, túneis em arcos, clareiras ligadas por caminhos, helicóptero abandonado, iluminação noturna, nove patrulhas finitas e cobertura tática. Otimizada com materiais compartilhados, neblina falsa de **9 planos translúcidos**, poucos pontos de luz e **130 partículas em um único objeto Points**, sem downloads de modelos ou faixas de áudio.
+
+**Roteiro fiel, em ordem:** (1) procurar e falar com **Valentin**, que revela o local de **Janus**; (2) confrontar Janus junto ao obelisco; (3) investigar o **helicóptero** abandonado; (4) encontrar e resgatar **Natalya**; (5) retornar à aeronave e recolher o **gravador de voo**, que fica invisível e indisponível até o resgate; (6) sair do parque. Contatos e pistas não podem ser acionados fora dessa ordem. Encontros principais reproduzem microcenas de câmera e diálogo: o jogo congela o movimento por poucos segundos, retoma o FPS e não marca outros objetivos automaticamente.
+
+- **Agent e Secret Agent (5 diretivas):** Valentin, Janus, helicóptero, Natalya e saída, com dificuldade de combate diferente. O gravador fica disponível opcionalmente após o resgate.
+- **00 Agent (6 diretivas):** mesmas tarefas, mas exige recuperar o gravador antes da saída.
+- **Pistas sonoras direcionais:** pequenos sinais procedurais no canal esquerdo/direito conforme a posição do próximo objetivo, respeitando a opção de som desligado e sem arquivos externos.
+- **Persistência:** conclua Bunker 2 para liberar Statue; progresso e recordes anteriores de Bunker 2 também são reconhecidos.
+
+Código: `src/statue-v2-0.js`. O teste `tests/statue.cjs`, executado por `node tests/check.cjs`, simula rotas navegáveis, sequência de contatos, microcenas, desbloqueio tardio do gravador, proteção de Natalya, saída e compatibilidade de salvamento. Testes automatizados não substituem uma partida real em navegador com WebGL.
+
+**Próxima missão do GDD:** Archives (ainda não implementada).
 
 ## Missão 09 — Bunker 2 (v1.9): Fuga com Natalya
 
@@ -25,7 +40,7 @@ O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, 
 
 **Testes:** `node tests/check.cjs` inclui `tests/bunker2.cjs`, que simula portões, alcance de objetivos, arquivo, câmeras, ordens de seguir/aguardar, escolta real até a saída, morte da aliada, reforços e desbloqueio antigo. Testes automáticos não substituem validar a experiência completa no navegador WebGL.
 
-**Próxima missão planejada:** Statue (ainda não implementada).
+**Próxima missão após Bunker 2:** Statue (implementada na v2.0).
 
 ## Missão 08 — Surface 2 (v1.8): Retorno a Severnaya
 
