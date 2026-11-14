@@ -235,6 +235,18 @@ assert.equal(game.appState,'CUTSCENE_OUTRO','Todas as diretivas devem permitir s
 world.build('surface1');
 assert.equal(world.surface2State,null,'Limpar referências de Surface 2 ao trocar mapa');
 assert.equal(world.interactables.length,4,'Surface 1 original deve continuar intacta');
+const lockedGame=new Game();
+lockedGame.currentMissionId='frigate';
+lockedGame.selectMission('surface2');
+assert.equal(lockedGame.currentMissionId,'frigate',
+  'Sem completar Frigate a nova missão deve continuar bloqueada');
+saved.set('ge007_frigate_best_AGENT','230.25');
+const migrated=new Game();
+migrated.currentMissionId='frigate';
+migrated.selectMission('surface2');
+assert.equal(migrated.currentMissionId,'surface2',
+  'Recorde de Frigate de versões antigas deve liberar Surface 2');
+saved.delete('ge007_frigate_best_AGENT');
 const completion=new Game();
 completion.currentMissionId='frigate';
 completion.completeMissionSuccess();
