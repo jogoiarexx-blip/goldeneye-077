@@ -2,7 +2,7 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const THREE=require('../vendor/three.min.js');
-const code=fs.readFileSync(require.resolve('../src/npc-models-v3-0.js'),'utf8');
+const code=fs.readFileSync(require.resolve('../src/npc-models-v3-2.js'),'utf8');
 class Builder{build(){}clear(){}}
 class Game{update(){}}
 const window={};
