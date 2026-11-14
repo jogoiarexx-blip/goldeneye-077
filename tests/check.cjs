@@ -113,6 +113,7 @@ for(const token of [
   'this.addBox(-9.8, 0.75, -125.2'
 ]) assert.ok(worldDam.includes(token),'Acesso de bungee defeituoso: '+token);
 require('./dam-rework.cjs');
+require('./facility-audit.cjs');
 
 
 
@@ -138,4 +139,4 @@ for (const required of [
 const visuals = fs.readFileSync(path.join(root, 'src/world.js'), 'utf8');
 assert.ok(visuals.includes("addSecurityGate('fac_gate_2'"), 'Porta do laboratório ausente.');
 assert.ok(visuals.includes("buildEscapePlane("), 'Avião de fuga ausente.');
-console.log('OK: dez missões, módulos, objetivos e Dam rework, IA, portas e cutscenes (checagens estáticas).');
+console.log('OK: dez missões, módulos, objetivos, Dam rework e auditoria Facility, IA, portas e cutscenes (checagens estáticas).');
