@@ -11,8 +11,8 @@ class Builder {
 }
 class Game{update(){}}
 const FakeThree=Object.assign({},THREE,{GLTFLoader:class {load(url,done,progress,fail){pending.push({url,done,fail})}}});
-const ctx=vm.createContext({THREE:FakeThree,DamLevelBuilder:Builder,GoldenEyeDamGame:Game,console});
-vm.runInContext(fs.readFileSync(require.resolve('../src/npc-models-v2-9.js'),'utf8'),ctx);
+const ctx=vm.createContext({THREE:FakeThree,DamLevelBuilder:Builder,GoldenEyeDamGame:Game,console,window:{}});
+vm.runInContext(fs.readFileSync(require.resolve('../src/npc-models-v3-0.js'),'utf8'),ctx);
 const builder=new Builder();builder.build('facility');
 assert.equal(builder.npcs.find(n=>n.id==='dr_doak').displayName,'Dra.','a médica deve substituir o contato que entrega o decodificador');
 assert.ok(pending.some(p=>p.url==='assets/models/scientist.glb'),'modelo enviado do cientista precisa ser carregado');
@@ -33,6 +33,13 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
  let skinA,skinB;a.visual.model.traverse(o=>{if(o.isSkinnedMesh)skinA=o});b.visual.model.traverse(o=>{if(o.isSkinnedMesh)skinB=o});
  assert.notEqual(skinA.skeleton.bones[0],skinB.skeleton.bones[0],'independent skeletons');
  assert.equal(skinA.geometry,skinB.geometry,'shared geometry');assert.equal(skinA.material.map,skinB.material.map,'shared textures');
+ const visualBounds=ctx.window.GoldenEyeNPCScale.visualBounds;
+ for(const npc of [contact,a,b]){
+  const box=visualBounds(npc.visual.model,true);
+  const expected=npc.role==='scientist'?1.72:1.75;
+  assert.ok(Math.abs(box.max.y-box.min.y-expected)<.05,
+    'Actual skinned vertices must be life-size: '+npc.id);
+ }
  const game=new Game();game.appState='PLAYING';game.levelBuilder=builder;game.player={pos:new THREE.Vector3(0,1.65,0)};
  game.update(.05);assert.equal(contact.visual.current,contact.visual.actions.Talk);
  const t=contact.visual.mixer.time;game.appState='PAUSED';game.update(.2);assert.equal(contact.visual.mixer.time,t);
@@ -44,8 +51,10 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
  for(let i=0;i<20;i++)game.update(.05);
  for(const npc of [a,b]){
   npc.mesh.updateMatrixWorld(true);
-  const actual=new THREE.Box3().setFromObject(npc.mesh);
-  assert.ok(Math.abs(actual.max.y-actual.min.y-1.72)<.05,'scientist height stable: '+npc.id);
+  const actual=visualBounds(npc.visual.model,true);
+  const height=actual.max.y-actual.min.y;
+  assert.ok(Math.abs(height-1.72)<.05,
+    'Scientist visibly gigantic after animation: '+npc.id+' '+height);
  }
  assert.equal(a.visual.targetHeight,1.72);assert.equal(b.visual.targetHeight,1.72);
  assert.equal(a.visual.actor.parent,a.visual.model,'Independent scale holder');
