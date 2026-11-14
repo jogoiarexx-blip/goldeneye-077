@@ -151,7 +151,7 @@
           <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">[1] [2] [3]</span> • PP7 / KF7 / Sniper</div>
           <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">[G] / [F]</span> • Plantar / Detonar Mina</div>
           <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">[E]</span> • Interagir / Pilotar Tanque</div>
-          <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">[R] / [CTRL]</span> • Recarregar / Agachar</div>
+          <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">[R] / [CTRL ou C]</span> • Recarregar / Agachar</div>
           <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">[H]</span> • Mostrar / ocultar orientação de objetivos</div>
           <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10"><span class="text-sky-400">CONTROLE</span> • Analógicos, RT tiro, LT mira, X usar, Y recarregar, Menu pausa, LB/RB minas</div>
         </div>
@@ -244,6 +244,10 @@
         </button>
       </div>
     </div>
+
+    <!-- Estado da postura e botão para telas sensíveis ao toque -->
+    <div id="hud-posture" class="fixed top-16 left-4 px-2 py-1 bg-slate-950/70 border border-white/10 rounded text-[10px] font-mono-tech text-slate-300">EM PÉ</div>
+    <button id="btn-mobile-crouch" type="button" aria-label="Agachar ou levantar" aria-pressed="false" class="mobile-crouch-button fixed bottom-32 right-4 z-30 items-center justify-center min-w-24 min-h-12 px-4 py-2 rounded-xl bg-sky-950/90 border border-sky-400 text-sky-200 font-bold text-xs pointer-events-auto touch-manipulation">AGACHAR</button>
 
     <!-- Banner de Pointer Lock -->
     <div id="pointer-lock-banner" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center pointer-events-auto cursor-pointer">
@@ -449,6 +453,12 @@
   <!-- ========================================================= -->
   <!-- MOTOR COMPLETO DO JOGO (MODULARIZADO EM CLASSES ES6)      -->
   <!-- ========================================================= -->
+  <style>
+    .mobile-crouch-button { display: none; }
+    @media (pointer: coarse) {
+      .mobile-crouch-button { display: flex; }
+    }
+  </style>
   <script src="src/audio.js" defer></script>
   <script src="src/missions.js" defer></script>
   <script src="src/world.js" defer></script>
