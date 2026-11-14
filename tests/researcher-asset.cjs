@@ -19,7 +19,7 @@ const animations=(json.animations||[]).map(x=>x.name);
 console.log('OK pesquisadora Meshy:',data.length,'bytes,',
   json.meshes.length,'meshes,',json.skins?.length||0,'skins,',
   'animacoes:',animations.join(', ')||'(pose estática)');
-const src=fs.readFileSync(path.join(root,'src/npc-models-v3-0.js'),'utf8');
+const src=fs.readFileSync(path.join(root,'src/npc-models-v3-2.js'),'utf8');
 for(const s of [
  'Medica_Otimizada_Walk_Menos25MB',"'sci_2'","'silo_scientist_2'",
  'walkOnlyIdle','npc.modelVariant=variant'
