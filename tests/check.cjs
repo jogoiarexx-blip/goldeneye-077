@@ -11,7 +11,7 @@ const scripts = [...html.matchAll(/<script\s+src="(src\/[^"]+\.js)"\s+defer><\/s
   .map(m => m[1]);
 const expected = [
   'src/audio.js', 'src/missions.js', 'src/world.js', 'src/guards.js',
-  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js', 'src/surface2-v1-8.js', 'src/bunker2-v1-9.js', 'src/statue-v2-0.js'
+  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js', 'src/surface2-v1-8.js', 'src/bunker2-v1-9.js', 'src/statue-v2-0.js', 'src/dam-rework-v2-0-1.js'
 ];
 assert.deepEqual(scripts, expected, 'Os scripts precisam carregar na ordem correta.');
 for (const rel of scripts) {
@@ -99,6 +99,21 @@ for(const token of [
 assert.ok(html.includes('data-mission="statue"'),'Statue não aparece no menu');
 assert.ok(html.includes('id="statue-cinematic"'),'HUD das cenas de Statue ausente');
 require('./statue.cjs');
+const damRework=fs.readFileSync(path.join(root,'src/dam-rework-v2-0-1.js'),'utf8');
+for(const token of [
+  'b.minX=-15.95', 'this.damStunt=buildStunt',
+  'new THREE.Line(lineGeo', 'stuntPosition(p)',
+  'damDeathAge', 'damEnhanced', 'hasLineOfSight('
+]) assert.ok(damRework.includes(token),'Melhoria Dam ausente: '+token);
+const worldDam=fs.readFileSync(path.join(root,'src/world.js'),'utf8');
+for(const token of [
+  "'bungee'", 'this.damJumpAnchor=new THREE.Vector3',
+  "'Pressione [E] na ponta da passarela",
+  'this.addBox(-9.8, 0.75, -34.9',
+  'this.addBox(-9.8, 0.75, -125.2'
+]) assert.ok(worldDam.includes(token),'Acesso de bungee defeituoso: '+token);
+require('./dam-rework.cjs');
+
 
 
 
@@ -123,4 +138,4 @@ for (const required of [
 const visuals = fs.readFileSync(path.join(root, 'src/world.js'), 'utf8');
 assert.ok(visuals.includes("addSecurityGate('fac_gate_2'"), 'Porta do laboratório ausente.');
 assert.ok(visuals.includes("buildEscapePlane("), 'Avião de fuga ausente.');
-console.log('OK: dez missões, módulos, objetivos, IA, portas e cutscenes (checagens estáticas).');
+console.log('OK: dez missões, módulos, objetivos e Dam rework, IA, portas e cutscenes (checagens estáticas).');
