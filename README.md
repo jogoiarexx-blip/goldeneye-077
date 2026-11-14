@@ -1,6 +1,6 @@
 # GoldenEye 007 Remastered — protótipo não oficial
 
-Protótipo de FPS de espionagem para navegador. Contém **seis missões**: Dam, Facility, Runway, Surface 1, Bunker 1 e Silo, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
+Protótipo de FPS de espionagem para navegador. Contém **sete missões**: Dam, Facility, Runway, Surface 1, Bunker 1, Silo e Frigate, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
 
 ## Jogar pelo GitHub Pages
 
@@ -11,6 +11,19 @@ O repositório está configurado para publicar automaticamente da branch `main`,
 Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy from a branch**, **Branch: main**, **Folder: /(root)**. Veja o status em **Actions → pages build and deployment**. A página `404.html` oferece uma rota de volta para o jogo quando um endereço interno antigo é acessado.
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
+
+## Missão 07 — Frigate (v1.7)
+
+**Monte Carlo — operação na fragata.** Novo navio jogável com convés, porto, passagens estreitas, quatro cabines, três portões, caixas de cobertura, oito guardas, três câmeras, quatro reféns, duas bombas e heliponto com um helicóptero rastreável. O cenário é procedural, sem modelos ou texturas extraídos do jogo comercial. A missão **Frigate libera após concluir Silo** e mantém desbloqueio em `localStorage` quando disponível.
+
+Objetivos por dificuldade:
+- **AGENT:** libertar pelo menos dois reféns, instalar rastreador no helicóptero identificado e evacuar (3 diretivas).
+- **SECRET AGENT:** libertar pelo menos três reféns, desarmar bomba da ponte, instalar rastreador e evacuar (4).
+- **00 AGENT:** libertar quatro reféns, desarmar as bombas da ponte e das máquinas, instalar rastreador e evacuar (5).
+
+Interações: **E** para libertar refém (sem matar refém por eliminação automática de captor), desarmar bomba (3 s por dispositivo; cancelamento ao afastar e pausa congela tempo) e aplicar rastreador ao helicóptero certo. Um tiro direto em refém causa falha. Reféns assustados se abaixam e, quando resgatados, recuam para uma posição mais protegida. A saída final só funciona depois de cumprir as diretivas da dificuldade. **Surface 2** permanece em desenvolvimento.
+
+O guia de objetivos **H** identifica os reféns restantes e as demais tarefas. `src/frigate-v1-7.js` implementa o cenário e sua lógica; `tests/check.cjs` verifica carregamento, sintaxe e elementos essenciais. Foram realizados testes simulados adicionais de caminhos, portões, reféns, desarme, rastreador e falha de missão; não substituem testes visuais completos com WebGL.
 
 ## Missão 06 — Silo (v1.6) e agachamento aperfeiçoado
 
