@@ -98,6 +98,30 @@
       }
 
       clear() {
+        // Ao trocar/reiniciar missões, remover só o Group não libera a memória
+        // GPU de geometrias e CanvasTextures. Descartar apenas recursos do mapa
+        // anterior (sem tocar no jogador, arma, HUD ou meshes dos guardas).
+        if (this.levelGroup && typeof this.levelGroup.traverse === 'function') {
+          const geometries = new Set();
+          const materials = new Set();
+          const textures = new Set();
+          this.levelGroup.traverse(object => {
+            if (object.geometry) geometries.add(object.geometry);
+            const mat = object.material;
+            if (Array.isArray(mat)) mat.forEach(item => materials.add(item));
+            else if (mat) materials.add(mat);
+          });
+          for (const mat of materials) {
+            if (!mat) continue;
+            for (const key of ['map', 'normalMap', 'roughnessMap',
+              'metalnessMap', 'emissiveMap', 'alphaMap', 'aoMap', 'bumpMap']) {
+              if (mat[key]) textures.add(mat[key]);
+            }
+            if (typeof mat.dispose === 'function') mat.dispose();
+          }
+          geometries.forEach(geom => geom.dispose?.());
+          textures.forEach(texture => texture.dispose?.());
+        }
         this.scene.remove(this.levelGroup);
         this.levelGroup = new THREE.Group();
         this.scene.add(this.levelGroup);
