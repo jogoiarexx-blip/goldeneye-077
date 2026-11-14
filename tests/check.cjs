@@ -11,7 +11,7 @@ const scripts = [...html.matchAll(/<script\s+src="(src\/[^"]+\.js)"\s+defer><\/s
   .map(m => m[1]);
 const expected = [
   'src/audio.js', 'src/missions.js', 'src/world.js', 'src/guards.js',
-  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js'
+  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js', 'src/surface2-v1-8.js'
 ];
 assert.deepEqual(scripts, expected, 'Os scripts precisam carregar na ordem correta.');
 for (const rel of scripts) {
@@ -64,6 +64,18 @@ for (const token of [
 ]) assert.ok(frigate.includes(token), 'Mecânica de Frigate ausente: ' + token);
 assert.ok(html.includes('data-mission="frigate"'), 'Frigate não aparece no menu');
 assert.ok(html.includes('id="frigate-bomb-progress"'), 'HUD do desarme ausente');
+const surface2 = fs.readFileSync(path.join(root, 'src/surface2-v1-8.js'), 'utf8');
+for(const token of [
+  "const ID = 'surface2'", 'WORLD.buildSurface2Level',
+  "'s2_disable_surveillance'", "'s2_cut_bunker_link'",
+  "'s2_disable_helicopter'", "'s2_bunker_entry'",
+  'originalBuild.call(this,', "this.addSecurityGate('s2_gate'",
+  's.helicopterDisabled=true', "finished==='frigate'",
+  'snow.geometry.setAttribute('
+]) assert.ok(surface2.includes(token),'Surface 2 incompleta: '+token);
+assert.ok(html.includes('data-mission="surface2"'),'Surface 2 não aparece no menu');
+require('./surface2.cjs');
+
 const guideSource = fs.readFileSync(path.join(root, 'src/mission-enhancements.js'), 'utf8');
 assert.ok(guideSource.includes("id === 'frigate_rescue_hostages'"), 'Guia não mostra os reféns restantes');
 const gameSource = fs.readFileSync(path.join(root, 'src/game.js'), 'utf8');
@@ -85,4 +97,4 @@ for (const required of [
 const visuals = fs.readFileSync(path.join(root, 'src/world.js'), 'utf8');
 assert.ok(visuals.includes("addSecurityGate('fac_gate_2'"), 'Porta do laboratório ausente.');
 assert.ok(visuals.includes("buildEscapePlane("), 'Avião de fuga ausente.');
-console.log('OK: sete missões, módulos, objetivos, IA, portas e cutscenes (checagens estáticas).');
+console.log('OK: oito missões, módulos, objetivos, IA, portas e cutscenes (checagens estáticas).');
