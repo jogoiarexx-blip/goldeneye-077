@@ -84,8 +84,8 @@
         </div>
       </div>
 
-      <!-- Campanha: quatro missões, Surface 1 disponível após concluir Runway -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-5">
+      <!-- Campanha: seis missões com desbloqueio sequencial a partir de Surface 1 -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
         <button data-mission="dam" class="mission-btn px-3 py-2.5 rounded-xl border text-left transition-all bg-sky-500/20 border-sky-400/60 cursor-pointer">
           <div class="text-[10px] font-mono-tech text-sky-300">MISSÃO 01</div>
           <div class="text-xs font-extrabold text-white">DAM</div>
@@ -107,6 +107,11 @@
           <div class="text-[10px] font-mono-tech text-slate-400">MISSÃO 05</div>
           <div class="text-xs font-extrabold text-white">BUNKER 1</div>
           <div class="bunker-status text-[9px] mt-1 font-mono-tech text-amber-300">BLOQUEADA</div>
+        </button>
+        <button data-mission="silo" class="mission-btn px-3 py-2.5 rounded-xl border text-left transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.07] cursor-pointer" aria-label="Missão 06 Silo">
+          <div class="text-[10px] font-mono-tech text-slate-400">MISSÃO 06</div>
+          <div class="text-xs font-extrabold text-white">SILO</div>
+          <div class="silo-status text-[9px] mt-1 font-mono-tech text-amber-300">BLOQUEADA</div>
         </button>
       </div>
 
@@ -249,6 +254,7 @@
     <div id="hud-posture" class="fixed top-16 left-4 px-2 py-1 bg-slate-950/70 border border-white/10 rounded text-[10px] font-mono-tech text-slate-300">EM PÉ</div>
     <button id="btn-mobile-crouch" type="button" aria-label="Agachar ou levantar" aria-pressed="false" class="mobile-crouch-button fixed bottom-32 right-4 z-30 items-center justify-center min-w-24 min-h-12 px-4 py-2 rounded-xl bg-sky-950/90 border border-sky-400 text-sky-200 font-bold text-xs pointer-events-auto touch-manipulation">AGACHAR</button>
 
+    <div id="silo-countdown" class="hidden fixed top-28 right-4 z-20 px-3 py-2 rounded-xl bg-slate-950/90 border-2 border-emerald-500 font-mono-tech text-sm font-bold tracking-widest text-white tabular-nums pointer-events-none">EVACUAÇÃO 07:00</div>
     <!-- Banner de Pointer Lock -->
     <div id="pointer-lock-banner" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center pointer-events-auto cursor-pointer">
       <div class="px-6 py-4 rounded-2xl bg-slate-900/95 border border-sky-400/50 text-center shadow-2xl">
@@ -468,5 +474,6 @@
   <script src="src/tactics-v1-3.js" defer></script>
   <script src="src/surface-v1-4.js" defer></script>
   <script src="src/bunker-v1-5.js" defer></script>
+  <script src="src/silo-v1-6.js" defer></script>
 </body>
 </html>
