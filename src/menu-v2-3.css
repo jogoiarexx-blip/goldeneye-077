@@ -1,0 +1,277 @@
+/* GOLDENEYE 077 — Interface MI6 v2.3 | sem dependências gráficas extras */
+:root {
+  --mi6-bg:#080e17;
+  --mi6-surface:rgba(11,20,32,.965);
+  --mi6-line:rgba(157,184,207,.18);
+  --mi6-ice:#77d9ed;
+  --mi6-gold:#f2c77a;
+  --mi6-font:'JetBrains Mono',monospace;
+}
+#screen-dossier,#screen-qwatch,#screen-results,#screen-cutscene {
+  isolation:isolate;
+}
+#screen-dossier {
+  justify-content:center;
+  padding:clamp(10px,2.5vw,40px);
+  background:radial-gradient(ellipse 70% 85% at 75% 52%,rgba(7,34,52,.17),transparent 85%),
+    linear-gradient(105deg,rgba(3,9,18,.97),rgba(5,12,22,.88) 63%,rgba(4,11,20,.72));
+}
+#screen-dossier::before,#screen-qwatch::before,#screen-results::before {
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.16;
+  background-image:linear-gradient(rgba(132,172,195,.17) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(132,172,195,.17) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:linear-gradient(110deg,black,transparent 85%);
+}
+#screen-dossier>.mi6-panel {
+  width:min(1060px,100%);max-width:1060px;max-height:min(95dvh,890px);
+  border-radius:23px;padding:clamp(15px,2.1vw,30px);
+  background:linear-gradient(136deg,rgba(16,30,46,.965),rgba(6,13,24,.97));
+  border:1px solid rgba(140,191,218,.27);
+  box-shadow:0 34px 110px rgba(0,0,0,.78),inset 0 1px 0 rgba(220,242,250,.09);
+  position:relative;overflow-y:auto;overscroll-behavior:contain;
+}
+#screen-dossier>.mi6-panel::before {
+  content:"ULTRA SECRETO // MI6";position:absolute;right:21px;top:0;
+  background:var(--mi6-gold);color:#18212e;padding:3px 12px;
+  font:700 9px var(--mi6-font);letter-spacing:.13em;
+  border-radius:0 0 5px 5px;z-index:2;
+}
+#screen-dossier h1 {
+  font-size:clamp(27px,3vw,40px);line-height:1.02;letter-spacing:-.065em;
+  text-shadow:0 2px 25px rgba(29,115,145,.24);
+}
+#screen-dossier h1 span {color:var(--mi6-gold)}
+#screen-dossier .mi6-workspace {
+  display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);
+  gap:clamp(12px,1.8vw,23px);margin-bottom:17px;
+}
+.mi6-section-heading {
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font:700 10px var(--mi6-font);letter-spacing:.12em;color:#a7c7d8;
+  margin:0 0 13px;text-transform:uppercase;
+}
+.mi6-section-heading strong {font-weight:700;color:var(--mi6-gold)}
+#screen-dossier .mission-map-panel,#screen-dossier .mission-ops-panel {
+  border:1px solid rgba(136,177,201,.17);background:rgba(3,11,22,.47);
+  padding:14px;border-radius:15px;min-width:0;
+}
+#screen-dossier .mission-map-panel>.grid {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;margin-bottom:0;
+}
+#screen-dossier .mission-btn {
+  border:1px solid rgba(160,185,205,.19)!important;
+  border-radius:10px;min-height:70px;min-width:0;padding:11px 12px 11px 17px;
+  position:relative;display:flex;flex-direction:column;justify-content:center;
+  text-align:left;background:linear-gradient(125deg,rgba(24,39,57,.9),rgba(13,24,40,.89))!important;
+  color:#e7f3f8;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s;
+}
+#screen-dossier .mission-btn::before {
+  content:"";position:absolute;left:0;top:13px;bottom:13px;width:3px;
+  border-radius:0 5px 5px 0;background:#587184;
+}
+#screen-dossier .mission-btn::after {
+  content:"›";position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  font:500 22px var(--mi6-font);color:#66859a;
+}
+#screen-dossier .mission-btn>div:first-child {font:600 10px var(--mi6-font)!important;letter-spacing:.05em;color:#94b7c9!important}
+#screen-dossier .mission-btn>div:nth-child(2) {
+  margin-top:3px;font-size:13px;font-weight:800;letter-spacing:.04em;
+  line-height:1.17;padding-right:8px;color:#f2f9fb;
+}
+#screen-dossier .mission-btn .surface-status,
+#screen-dossier .mission-btn .bunker-status,
+#screen-dossier .mission-btn .silo-status,
+#screen-dossier .mission-btn .frigate-status,
+#screen-dossier .mission-btn .surface2-status,
+#screen-dossier .mission-btn .bunker2-status,
+#screen-dossier .mission-btn .statue-status {
+  font-size:9px;line-height:1.2;letter-spacing:.03em;
+}
+#screen-dossier .mission-btn[aria-disabled="true"] {opacity:.66;filter:saturate(.7)}
+#screen-dossier .mission-btn[aria-disabled="true"]::after {content:"⌑";font-size:14px}
+#screen-dossier .mission-btn[aria-current="true"] {
+  border-color:rgba(242,199,122,.78)!important;
+  background:linear-gradient(125deg,rgba(70,60,39,.58),rgba(18,40,54,.92))!important;
+  box-shadow:0 0 0 1px rgba(242,199,122,.2),inset 0 0 28px rgba(242,199,122,.055);
+}
+#screen-dossier .mission-btn[aria-current="true"]::before {background:var(--mi6-gold)}
+#screen-dossier .mission-btn[aria-current="true"]::after {color:var(--mi6-gold)}
+#screen-dossier .mission-btn:not([aria-disabled="true"]):hover {
+  border-color:rgba(119,217,237,.65)!important;
+  transform:translateY(-1px);
+  background:linear-gradient(125deg,rgba(26,61,78,.95),rgba(12,33,50,.92))!important;
+}
+#screen-dossier .dossier-tab,#screen-qwatch .qw-tab {
+  border:1px solid rgba(144,181,202,.23)!important;background:rgba(11,27,42,.88)!important;
+  color:#a8c4d4!important;border-radius:8px;min-height:38px;white-space:nowrap;
+  font:700 10px var(--mi6-font);letter-spacing:.045em;transition:all .15s;
+}
+#screen-dossier .dossier-tab[aria-selected="true"],#screen-qwatch .qw-tab[aria-selected="true"] {
+  background:rgba(42,91,108,.49)!important;color:#b3f3ff!important;
+  border-color:rgba(119,217,237,.66)!important;
+  box-shadow:inset 0 -2px 0 var(--mi6-ice);
+}
+#screen-dossier .dossier-tab:hover,#screen-qwatch .qw-tab:hover {color:#fff!important}
+#screen-dossier .mission-ops-panel>.flex.gap-1\.5 {display:flex;flex-wrap:wrap;gap:6px}
+#screen-dossier .tab-content {min-height:132px}
+#screen-dossier #tab-objetivos #dossier-objectives-list>div {
+  border:1px solid rgba(130,170,194,.16);background:rgba(15,31,47,.8);
+}
+#screen-dossier #tab-briefing>div,#screen-dossier #tab-controles>div {
+  background:rgba(13,28,44,.79);border:1px solid rgba(147,178,197,.17);
+}
+#screen-dossier #tab-controles {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#screen-dossier #tab-controles>div {padding:10px;line-height:1.5}
+#screen-dossier .mi6-difficulty-group {
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+}
+#screen-dossier .diff-btn {
+  min-height:86px!important;padding:10px!important;align-items:flex-start;
+  border:1px solid rgba(142,178,199,.23)!important;border-radius:10px;
+  background:rgba(14,30,46,.92)!important;gap:6px;transition:background .18s,border-color .18s;
+}
+#screen-dossier .diff-btn>div {min-width:0}
+#screen-dossier .diff-btn>div>div:first-child {font:800 10px var(--mi6-font);line-height:1.2;white-space:normal}
+#screen-dossier .diff-btn>div>div:nth-child(2) {font-size:10px;line-height:1.35;margin-top:6px;color:#9cbbca!important}
+#screen-dossier .diff-btn .diff-dot {flex-shrink:0;margin-top:1px}
+#screen-dossier .diff-btn[aria-pressed="true"] {
+  border-color:rgba(242,199,122,.65)!important;
+  background:rgba(61,53,37,.47)!important;box-shadow:inset 0 0 20px rgba(243,199,122,.045);
+}
+#screen-dossier .diff-btn[aria-pressed="true"] .diff-dot {
+  background:var(--mi6-gold)!important;box-shadow:0 0 9px rgba(242,199,122,.6);
+}
+#screen-dossier #btn-start-mission {
+  min-height:55px;border-radius:10px;color:#0e1925;
+  background:linear-gradient(115deg,#e9bc6d,#ffe1a2 54%,#ebbe6c);
+  border:1px solid rgba(255,237,193,.63);letter-spacing:.13em;
+  box-shadow:0 10px 26px rgba(200,144,62,.18);
+}
+#screen-dossier #btn-start-mission:hover {filter:brightness(1.09);transform:translateY(-1px)}
+.mi6-bottom-note {
+  margin:12px 1px 0;text-align:center;font:500 10px var(--mi6-font);
+  color:#849fb1;letter-spacing:.02em;
+}
+#screen-qwatch {
+  background:radial-gradient(circle at center,rgba(26,58,73,.8),rgba(2,7,14,.98) 76%);
+}
+#screen-qwatch>.qwatch-bezel {
+  max-width:855px;width:100%;max-height:min(95dvh,850px);
+  overflow-y:auto;border:1px solid rgba(127,192,213,.48);
+  border-radius:26px;background:linear-gradient(145deg,#172a3a,#081320 73%);
+  box-shadow:0 0 0 5px rgba(4,11,18,.86),0 0 0 7px #355061,
+    0 36px 85px rgba(0,0,0,.88),inset 0 1px 0 rgba(176,230,247,.16);
+  padding:clamp(17px,3vw,31px);
+}
+#screen-qwatch>.qwatch-bezel::before {
+  content:"Q BRANCH • SECURE TERMINAL";display:block;margin-bottom:14px;
+  color:var(--mi6-gold);letter-spacing:.16em;font:700 10px var(--mi6-font);
+}
+#screen-qwatch .qw-tab-content {min-height:210px}
+#screen-qwatch #qwatch-objectives>div {
+  background:rgba(14,30,44,.84)!important;border-color:rgba(142,187,207,.22)!important;
+}
+#screen-qwatch #qw-tab-ajustes>div {
+  background:rgba(14,30,44,.83);border-color:rgba(142,187,207,.2);
+}
+#screen-qwatch .qw-live-grid {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+}
+#screen-qwatch .qw-live-card {
+  padding:15px;border:1px solid rgba(135,180,205,.23);
+  border-radius:11px;background:rgba(8,21,35,.82);min-width:0;
+}
+#screen-qwatch .qw-live-card .eyebrow {
+  display:block;margin-bottom:8px;font:700 10px var(--mi6-font);
+  letter-spacing:.07em;color:var(--mi6-ice);
+}
+#screen-qwatch .qw-live-card strong {font-size:15px;color:#f5fafc}
+#screen-qwatch .qw-live-card p {font-size:12px;color:#a9c2d1;margin-top:7px}
+#screen-qwatch .qw-live-card .big {font:800 23px var(--mi6-font);color:var(--mi6-gold)}
+#screen-qwatch .qw-tab,#screen-qwatch #btn-qwatch-resume,
+#screen-qwatch #btn-qwatch-restart,#screen-qwatch #btn-qwatch-abort {
+  min-height:44px;
+}
+#screen-qwatch #btn-qwatch-resume {
+  background:linear-gradient(115deg,#e9bc6d,#ffdfa0)!important;color:#142030!important;
+}
+#screen-results {
+  background:radial-gradient(circle at 50% 40%,rgba(29,56,75,.62),rgba(3,8,16,.96) 80%);
+}
+#screen-results>.mi6-panel {
+  max-width:610px;padding:clamp(22px,3.5vw,38px);border-radius:20px;
+  background:linear-gradient(145deg,rgba(17,35,52,.97),rgba(6,14,25,.98));
+  border:1px solid rgba(126,185,209,.33);
+  box-shadow:0 28px 100px rgba(0,0,0,.86);
+}
+#screen-results>.mi6-panel::before {
+  content:"MI6 // RELATÓRIO DE MISSÃO";display:block;margin-bottom:17px;
+  font:700 10px var(--mi6-font);letter-spacing:.18em;color:var(--mi6-gold);
+}
+#screen-results #results-title {font-size:clamp(22px,3vw,33px);letter-spacing:-.04em}
+#screen-results .grid.grid-cols-2>div {
+  background:rgba(17,37,53,.8);border:1px solid rgba(146,192,212,.23);
+  padding:17px;border-radius:11px;
+}
+#screen-results .grid.grid-cols-2>div>div:last-child {font-size:25px}
+#screen-results button,#screen-qwatch button {transition:filter .18s,transform .18s,border-color .18s}
+#screen-results button:hover,#screen-qwatch button:hover {filter:brightness(1.13)}
+#screen-results button:active,#screen-qwatch button:active {transform:scale(.985)}
+#screen-cutscene {background:linear-gradient(180deg,rgba(4,10,18,.35),transparent 22%,transparent 78%,rgba(4,10,18,.5))}
+#screen-cutscene #cutscene-tag {border-color:rgba(242,199,122,.65);color:var(--mi6-gold);border-radius:7px}
+#screen-cutscene #cutscene-subtitle {line-height:1.6;max-width:690px;border-left:3px solid var(--mi6-gold)}
+#screen-qwatch input[type=range] {min-height:24px}
+#screen-dossier button:focus-visible,#screen-qwatch button:focus-visible,
+#screen-results button:focus-visible,#screen-qwatch input:focus-visible {
+  outline:3px solid var(--mi6-gold);outline-offset:3px;position:relative;z-index:2;
+}
+#screen-dossier button,#screen-qwatch button,#screen-results button {touch-action:manipulation}
+#screen-dossier .mi6-panel::-webkit-scrollbar,#screen-qwatch .qwatch-bezel::-webkit-scrollbar,
+#screen-dossier .mission-list-scroll::-webkit-scrollbar {width:6px;height:6px}
+#screen-dossier .mi6-panel::-webkit-scrollbar-thumb,
+#screen-qwatch .qwatch-bezel::-webkit-scrollbar-thumb,
+#screen-dossier .mission-list-scroll::-webkit-scrollbar-thumb {
+  background:rgba(146,190,212,.33);border-radius:9px;
+}
+@media(max-width:800px){
+  #screen-dossier>.mi6-panel {max-height:97dvh;padding:18px}
+  #screen-dossier .mi6-workspace {grid-template-columns:minmax(0,1fr);gap:10px}
+  #screen-dossier .mission-map-panel,#screen-dossier .mission-ops-panel {padding:12px}
+  #screen-dossier .mission-list-scroll {overflow-x:auto;overscroll-behavior-x:contain;padding:2px 2px 11px}
+  #screen-dossier .mission-map-panel>.grid {
+    grid-template-columns:repeat(5,minmax(140px,1fr));grid-template-rows:repeat(2,64px);
+    grid-auto-flow:column;min-width:740px;gap:7px;
+  }
+  #screen-dossier .mission-btn {min-height:64px;padding:8px 12px 8px 16px}
+  #screen-dossier .tab-content {min-height:unset}
+  #screen-qwatch>.qwatch-bezel {max-height:96dvh}
+}
+@media(max-width:520px){
+  #screen-dossier {padding:7px}
+  #screen-dossier>.mi6-panel {max-height:98dvh;padding:15px;border-radius:12px}
+  #screen-dossier>.mi6-panel::before {font-size:8px}
+  #screen-dossier .mi6-panel>div:first-child {flex-wrap:wrap;gap:8px;margin-bottom:14px;padding-bottom:15px}
+  #screen-dossier h1 {font-size:29px}
+  #screen-dossier .mi6-section-heading {font-size:9px}
+  #screen-dossier .mission-ops-panel>.flex.gap-1\.5 {gap:5px}
+  #screen-dossier .dossier-tab {padding:8px 10px;font-size:9px}
+  #screen-dossier #tab-controles {grid-template-columns:minmax(0,1fr)}
+  #screen-dossier .mi6-difficulty-group {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  #screen-dossier .diff-btn {padding:8px!important;min-height:99px!important}
+  #screen-dossier .diff-btn>div>div:first-child {font-size:9px}
+  #screen-dossier .diff-btn>div>div:nth-child(2) {font-size:9px}
+  #screen-qwatch {padding:8px}
+  #screen-qwatch>.qwatch-bezel {border-radius:16px;max-height:97dvh;padding:15px}
+  #screen-qwatch .qw-tab {padding:9px 8px;font-size:9px}
+  #screen-qwatch .qw-live-grid {grid-template-columns:minmax(0,1fr)}
+  #screen-qwatch .qw-tab-content {min-height:unset}
+  #screen-results {padding:8px}
+  #screen-results>.mi6-panel {padding:19px}
+  #screen-results .grid.grid-cols-2>div {padding:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  #screen-dossier button,#screen-qwatch button,#screen-results button {transition:none!important}
+  #screen-dossier .mission-btn:hover,#screen-dossier #btn-start-mission:hover {transform:none}
+  #screen-dossier .animate-pulse,#screen-qwatch .animate-pulse {animation:none!important}
+}

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GoldenEye 007 Remastered — 10 Missões | Auditoria v2.0.5</title>
+  <title>GoldenEye 077 — Central MI6 | 10 Missões</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070b10'/%3E%3Ctext x='32' y='45' font-family='Arial,sans-serif' font-size='34' font-weight='bold' fill='%2338bdf8' text-anchor='middle'%3E07%3C/text%3E%3C/svg%3E">
   <meta name="description" content="GoldenEye 007 Remastered: FPS não oficial em Three.js com dez missões jogáveis, correções de cenários e guardas removidos após cinco segundos.">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -49,6 +49,7 @@
       transition: opacity 0.15s ease-out;
     }
   </style>
+  <link rel="stylesheet" href="src/menu-v2-3.css">
 </head>
 <body>
 
@@ -84,6 +85,10 @@
         </div>
       </div>
 
+      <div class="mi6-workspace">
+        <section class="mission-map-panel" aria-label="Selecionar operação">
+          <div class="mi6-section-heading"><span>01 / CAMPANHA</span><strong id="campaign-progress">10 MISSÕES</strong></div>
+          <div class="mission-list-scroll">
       <!-- Campanha: dez missões, incluindo Statue, o parque de São Petersburgo -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-5">
         <button data-mission="dam" class="mission-btn px-3 py-2.5 rounded-xl border text-left transition-all bg-sky-500/20 border-sky-400/60 cursor-pointer">
@@ -135,6 +140,10 @@
         </button>
       </div>
 
+          </div>
+        </section>
+        <section class="mission-ops-panel" aria-label="Detalhes da operação">
+          <div class="mi6-section-heading"><span>02 / INTELIGÊNCIA E PREPARO</span><strong id="campaign-selection">DAM</strong></div>
       <!-- Abas Minimalistas -->
       <div class="flex gap-1.5 mb-5">
         <button data-tab="objetivos" class="dossier-tab px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-sky-500/20 text-sky-300 border border-sky-400/40 cursor-pointer">
@@ -185,7 +194,7 @@
       <!-- Seletor de Dificuldade Clean -->
       <div class="mb-6">
         <div class="text-[11px] font-mono-tech uppercase tracking-wider text-slate-400 mb-2.5">Nível de Operação</div>
-        <div class="space-y-2">
+        <div class="mi6-difficulty-group">
           <button data-diff="AGENT" class="diff-btn w-full text-left px-4 py-3 rounded-xl border transition-all flex items-center justify-between bg-white/[0.03] border-white/10 hover:bg-white/[0.07] cursor-pointer">
             <div>
               <div class="text-xs font-extrabold text-white">AGENT</div>
@@ -210,10 +219,14 @@
         </div>
       </div>
 
+        </section>
+      </div>
+
       <!-- Botão Iniciar -->
       <button id="btn-start-mission" class="w-full py-3.5 px-6 rounded-xl bg-sky-500 hover:bg-sky-400 active:scale-[0.99] text-slate-950 font-extrabold text-sm uppercase tracking-widest shadow-lg shadow-sky-500/25 cursor-pointer transition">
-        Iniciar Missão
+        ▶ INICIAR OPERAÇÃO
       </button>
+      <p id="menu-footer-hint" class="mi6-bottom-note">MOUSE / TOQUE • TECLADO • CONTROLE</p>
     </div>
   </div>
 
@@ -369,27 +382,10 @@
         <div id="qwatch-objectives" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
       </div>
 
-      <!-- Aba 2: Inventário & Gadget Q -->
-      <div id="qw-tab-inventario" class="qw-tab-content hidden mb-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-          <div class="text-[10px] font-mono-tech text-emerald-400">ARMA PRIMÁRIA • FURTIVA</div>
-          <div class="text-xs font-bold text-white mt-0.5">Walther PP7 Silenciada</div>
-          <div class="text-[11px] text-slate-400 mt-1">Raio sonoro: 5.5m • Dano alto em precisão</div>
-        </div>
-        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-          <div class="text-[10px] font-mono-tech text-amber-400">ARMA SECUNDÁRIA • ASSALTO</div>
-          <div class="text-xs font-bold text-white mt-0.5">KF7 Soviet 7.62mm</div>
-          <div class="text-[11px] text-slate-400 mt-1">Raio sonoro: 38m • Alta cadência de disparo</div>
-        </div>
-        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-          <div class="text-[10px] font-mono-tech text-sky-400">DISPOSITIVO Q-BRANCH</div>
-          <div class="text-xs font-bold text-white mt-0.5">Modem de Interceptação</div>
-          <div class="text-[11px] text-slate-400 mt-1">Acoplar no terminal da sala de controle</div>
-        </div>
-        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-          <div class="text-[10px] font-mono-tech text-purple-400">EQUIPAMENTO DE EXTRAÇÃO</div>
-          <div class="text-xs font-bold text-white mt-0.5">Corda Bungee Tática</div>
-          <div class="text-[11px] text-slate-400 mt-1">Ativar na passarela norte após objetivos</div>
+      <!-- Inventário sincronizado com o jogador, não apenas com DAM -->
+      <div id="qw-tab-inventario" class="qw-tab-content hidden mb-5">
+        <div id="qwatch-live-loadout" class="qw-live-grid" aria-live="polite">
+          <div class="qw-live-card">Carregando equipamentos do agente...</div>
         </div>
       </div>
 
@@ -508,5 +504,6 @@
   <script src="src/player-model.js" defer></script>
   <script src="src/scenery-v2-1.js" defer></script>
   <script src="src/doctor-model.js" defer></script>
+  <script src="src/menu-ui-v2-3.js" defer></script>
 </body>
 </html>

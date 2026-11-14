@@ -11,7 +11,7 @@ const scripts = [...html.matchAll(/<script\s+src="(src\/[^"]+\.js)"\s+defer><\/s
   .map(m => m[1]);
 const expected = [
   'src/audio.js', 'src/missions.js', 'src/world.js', 'src/guards.js',
-  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js', 'src/surface2-v1-8.js', 'src/bunker2-v1-9.js', 'src/statue-v2-0.js', 'src/dam-rework-v2-0-1.js', 'src/global-audit-v2-0-5.js', 'src/player-model.js', 'src/scenery-v2-1.js', 'src/doctor-model.js'
+  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js', 'src/surface2-v1-8.js', 'src/bunker2-v1-9.js', 'src/statue-v2-0.js', 'src/dam-rework-v2-0-1.js', 'src/global-audit-v2-0-5.js', 'src/player-model.js', 'src/scenery-v2-1.js', 'src/doctor-model.js', 'src/menu-ui-v2-3.js'
 ];
 assert.deepEqual(scripts, expected, 'Os scripts precisam carregar na ordem correta.');
 for (const rel of scripts) {
@@ -148,4 +148,5 @@ require('./headshot.cjs');
 require('./player-model.cjs');
 
 require('./doctor-model.cjs');
+require('./menu-ui.cjs');
 require('./runway-aircraft.cjs');
