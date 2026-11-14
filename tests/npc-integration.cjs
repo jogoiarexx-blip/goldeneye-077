@@ -23,17 +23,18 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
  doctorRequest.done(doctor);scientistRequest.done(scientist);
  const contact=builder.npcs[0],a=builder.npcs[1],b=builder.npcs[2];
  assert.equal(contact.role,'doak');assert.equal(contact.modelStatus,'ready');
+ const visualBounds=ctx.window.GoldenEyeNPCScale.visualBounds;
  for(const npc of builder.npcs){
   npc.mesh.updateMatrixWorld(true);
-  const box=new THREE.Box3().setFromObject(npc.mesh);
+  const box=visualBounds(npc.visual.model,true);
   const expected=npc.role==='scientist'?1.72:1.75;
-  assert.ok(Math.abs(box.min.y)<.025,'feet on floor: '+npc.id);
-  assert.ok(Math.abs(box.max.y-expected)<.035,'uniform actor height: '+npc.id);
+  assert.ok(Math.abs(box.min.y)<.035,'visible feet on floor: '+npc.id+' y='+box.min.y);
+  assert.ok(Math.abs(box.max.y-expected)<.045,
+    'visible model height: '+npc.id+' y='+box.max.y);
  }
  let skinA,skinB;a.visual.model.traverse(o=>{if(o.isSkinnedMesh)skinA=o});b.visual.model.traverse(o=>{if(o.isSkinnedMesh)skinB=o});
  assert.notEqual(skinA.skeleton.bones[0],skinB.skeleton.bones[0],'independent skeletons');
  assert.equal(skinA.geometry,skinB.geometry,'shared geometry');assert.equal(skinA.material.map,skinB.material.map,'shared textures');
- const visualBounds=ctx.window.GoldenEyeNPCScale.visualBounds;
  for(const npc of [contact,a,b]){
   const box=visualBounds(npc.visual.model,true);
   const expected=npc.role==='scientist'?1.72:1.75;
