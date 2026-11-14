@@ -18,7 +18,7 @@ class Object3D{
  constructor(){
   this.position=new V();this.rotation={x:0,y:0,z:0,order:'XYZ'};
   this.scale={x:1,y:1,z:1,set(x,y,z){this.x=x;this.y=y;this.z=z;return this},setScalar(n){this.x=this.y=this.z=n}};
-  this.children=[];this.visible=true;this.material=null;
+  this.children=[];this.visible=true;this.material=null;this.userData={};
  }
  add(...children){this.children.push(...children)}
  remove(obj){this.children=this.children.filter(x=>x!==obj)}
@@ -91,6 +91,26 @@ const World=ctx.DamLevelBuilder;
 const scene={add(){},remove(){}};
 const level=new World(scene);
 level.build('dam');
+// Testa a CAUSA ORIGINAL DO BUG: coordenada passada como altura-base.
+const towers=level.levelGroup.children.filter(
+  x=>x.userData?.structureType==='transmission-tower');
+assert.equal(towers.length,3,'Dam deve manter três torres de transmissão');
+const groundTowers=towers.filter(x=>x.position.z===-22||x.position.z===-88);
+assert.equal(groundTowers.length,2,'Duas torres da represa presentes');
+assert.ok(groundTowers.every(x=>x.position.y===0),
+  'Torres devem se apoiar no chão; y=18 fazia torres flutuarem');
+const roofTower=towers.find(x=>x.position.z===-121);
+assert.ok(roofTower&&Math.abs(roofTower.position.y-4.6)<.01,
+  'Terceira torre apoiada no teto da sala de máquinas');
+assert.ok(towers.every(x=>x.children.length>=15),
+  'Faltam sapatas ou travamentos nas torres');
+// O relevo deve ser facetado e fora da pista, não cubos enormes.
+const badRockBoxes=level.levelGroup.children.filter(x=>
+  x.geometry?.dimensions?.length===3&&
+  x.geometry.dimensions[0]>=13&&x.geometry.dimensions[1]>=24&&
+  x.geometry.dimensions[2]>=48);
+assert.equal(badRockBoxes.length,0,
+  'Penhascos cúbicos enormes não podem bloquear visual da barragem');
 const platform=level.interactables.find(x=>x.id==='bungee');
 assert.ok(platform,'Saída da Dam deve existir');
 assert.equal(platform.position.x,-13.92);
@@ -213,6 +233,15 @@ g.update(.05);
 assert.equal(follower.state,'SUSPICIOUS',
  'Guarda próximo deve ouvir alerta da equipe');
 level.build('facility');
-assert.ok(!level.damJumpAnchor || level.interactables.every(x=>x.id!=='bungee'));
+assert.equal(level.damJumpAnchor,null,
+  'Ancoragem da Dam não deve vazar para Facility');
+assert.equal(level.damJumpPoint,null,'Ponto do bungee não pode persistir');
+assert.equal(level.interactables.some(x=>x.id==='bungee'),false);
+level.build('runway');
+const runwayTower=level.levelGroup.children.find(x=>
+  x.userData?.structureType==='transmission-tower');
+assert.ok(runwayTower&&Math.abs(runwayTower.position.y-5.2)<.01,
+  'Torre da Runway deve ficar apoiada no teto a 5.2m');
+assert.equal(level.damJumpAnchor,null,'Bungee não pode aparecer na Runway');
 console.log('OK Dam v2.0.1: plataforma acessível, parapeito aberto, limite local,');
 console.log('câmera de queda/corda, soldados equipados, morte animada e alerta em equipe.');
