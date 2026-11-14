@@ -313,6 +313,8 @@
   GAME.startMission=function(){
     this.bunkerDownload=null;
     this.bunkerProgressElement=null;
+    const progressUI=document.getElementById('bunker-download-progress');
+    if(progressUI)progressUI.classList.add('hidden');
     oldStart.call(this);
     if(this.currentMissionId===ID){
       this.levelBuilder.bunker1.gameStarted=true;
@@ -437,6 +439,8 @@
       const task=this.bunkerDownload;
       if(this.player.pos.distanceTo(task.item.position)>task.item.radius+0.25){
         this.bunkerDownload=null;
+        const indicator=document.getElementById('bunker-download-progress');
+        if(indicator)indicator.classList.add('hidden');
         this.notifyHUD('DOWNLOAD CANCELADO — VOCÊ SE AFASTOU DO TERMINAL');
       }else{
         task.timer+=dt;
