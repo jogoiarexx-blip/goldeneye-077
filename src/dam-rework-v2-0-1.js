@@ -219,7 +219,7 @@
             if(teammate===g||teammate.state==='DEAD'||
                teammate.state==='ALERTED'||!teammate.damEnhanced)continue;
             const dist=g.pos.distanceTo(teammate.pos);
-            if(dist>11)return; // limitar trabalho por guarda alertado
+            if(dist>11)continue; // parceiro distante, mantém atualização do frame
             if(hasLineOfSight(
               new THREE.Vector3(g.pos.x,1.45,g.pos.z),
               new THREE.Vector3(teammate.pos.x,1.45,teammate.pos.z),
