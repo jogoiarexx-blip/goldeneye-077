@@ -15,13 +15,33 @@ const ctx=vm.createContext({THREE:FakeThree,DamLevelBuilder:Builder,GoldenEyeDam
 vm.runInContext(fs.readFileSync(require.resolve('../src/npc-models-v3-0.js'),'utf8'),ctx);
 const builder=new Builder();builder.build('facility');
 assert.equal(builder.npcs.find(n=>n.id==='dr_doak').displayName,'Dra.','a médica deve substituir o contato que entrega o decodificador');
-assert.ok(pending.some(p=>p.url==='assets/models/scientist.glb'),'modelo enviado do cientista precisa ser carregado');
+assert.ok(pending.some(p=>p.url==='assets/models/scientist.glb'),'cientista masculino mantido');
+assert.ok(pending.some(p=>p.url==='assets/models/Medica_Otimizada_Walk_Menos25MB.glb'),
+ 'terceira mulher precisa carregar na Facility');
 console.log('OK contatos: médica no decodificador e cientista GLB solicitado.');
 require('./doctor-model.cjs').then(([doctor,scientist])=>{
  const doctorRequest=pending.find(p=>p.url.endsWith('/dra.glb'));
  const scientistRequest=pending.find(p=>p.url.endsWith('/scientist.glb'));
+ // Female test double with the "Walk" naming from some Meshy exports.
+ // The real 23MB GLB is checked independently by tests/researcher-asset.cjs.
+ const researcherRequest=pending.find(p=>p.url.endsWith('/Medica_Otimizada_Walk_Menos25MB.glb'));
+ const femaleGroup=new THREE.Group();
+ const femaleMesh=new THREE.Mesh(new THREE.BoxGeometry(.42,1.7,.3),new THREE.MeshStandardMaterial({color:0xf7f7f7}));
+ femaleMesh.position.y=.85;femaleGroup.add(femaleMesh);
+ const walking=new THREE.AnimationClip('Walk',1.0,[
+  new THREE.NumberKeyframeTrack('.rotation[y]',[0,.5,1],[0,.04,0])
+ ]);
  doctorRequest.done(doctor);scientistRequest.done(scientist);
- const contact=builder.npcs[0],a=builder.npcs[1],b=builder.npcs[2];
+ researcherRequest.done({scene:femaleGroup,animations:[walking]});
+ const contact=builder.npcs[0],a=builder.npcs[1],woman=builder.npcs[2],b=builder.npcs[3];
+ assert.equal(woman.displayName,'Pesquisadora');
+ assert.equal(woman.modelStatus,'ready');
+ assert.equal(woman.modelVariant,'Medica_Otimizada_Walk_Menos25MB');
+ assert.equal(woman.visual.model.name,'Pesquisadora-GLB');
+ assert.ok(woman.visual.actions.Walking,'animacao Walk deve funcionar');
+ assert.equal(woman.visual.actions.Walking.paused,true,'andada parada quando imóvel');
+ assert.equal(contact.modelVariant,'dra','a Dra. mantém o decodificador');
+ assert.equal(contact.id,'dr_doak');
  assert.equal(contact.role,'doak');assert.equal(contact.modelStatus,'ready');
  const visualBounds=ctx.window.GoldenEyeNPCScale.visualBounds;
  for(const npc of builder.npcs){
@@ -35,7 +55,7 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
  let skinA,skinB;a.visual.model.traverse(o=>{if(o.isSkinnedMesh)skinA=o});b.visual.model.traverse(o=>{if(o.isSkinnedMesh)skinB=o});
  assert.notEqual(skinA.skeleton.bones[0],skinB.skeleton.bones[0],'independent skeletons');
  assert.equal(skinA.geometry,skinB.geometry,'shared geometry');assert.equal(skinA.material.map,skinB.material.map,'shared textures');
- for(const npc of [contact,a,b]){
+ for(const npc of [contact,a,woman,b]){
   const box=visualBounds(npc.visual.model,true);
   const expected=npc.role==='scientist'?1.72:1.75;
   assert.ok(Math.abs(box.max.y-box.min.y-expected)<.05,
@@ -57,14 +77,20 @@ require('./doctor-model.cjs').then(([doctor,scientist])=>{
   assert.ok(Math.abs(height-1.72)<.05,
     'Scientist visibly gigantic after animation: '+npc.id+' '+height);
  }
- assert.equal(a.visual.targetHeight,1.72);assert.equal(b.visual.targetHeight,1.72);
+ assert.equal(a.visual.targetHeight,1.72);
+ assert.equal(b.visual.targetHeight,1.72);
+ assert.equal(woman.visual.targetHeight,1.72);
+ assert.equal(woman.visual.actions.Walking.paused,true);
  assert.equal(a.visual.actor.parent,a.visual.model,'Independent scale holder');
  assert.ok(a.visual.model.scale.x<b.visual.model.scale.x,'Animation root cannot override scale holder');
  contact.dead=true;const deathTime=contact.visual.mixer.time;game.update(.05);assert.equal(contact.visual.mixer.time,deathTime);
  let disposed=0;skinA.geometry.addEventListener('dispose',()=>disposed++);
  builder.levelGroup.remove(a.mesh);assert.equal(a.visual.released,true);assert.equal(disposed,0,'corpse does not dispose resources still used by other scientists');
  builder.clear();assert.equal(disposed,1,'mission clear releases shared resources once');
- const staleBuilder=new Builder();staleBuilder.build('silo');const old=pending[pending.length-1];staleBuilder.build('dam');
+ const staleBuilder=new Builder();staleBuilder.build('silo');
+ assert.ok(pending.filter(p=>p.url.endsWith('/Medica_Otimizada_Walk_Menos25MB.glb')).length>=2,
+  'Silo deve ter a mesma variante feminina sem novo NPC');
+ const old=pending[pending.length-1];staleBuilder.build('dam');
  const orphan=new THREE.Group(),mesh=new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshStandardMaterial());orphan.add(mesh);let released=0;mesh.geometry.addEventListener('dispose',()=>released++);old.done({scene:orphan,animations:[]});assert.equal(released,1);
  const fallback=new Builder();fallback.build('facility');pending[pending.length-1].fail();
  assert.equal(fallback.npcs[1].modelStatus,'fallback');

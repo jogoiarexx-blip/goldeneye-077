@@ -149,6 +149,7 @@ require('./player-model.cjs');
 
 require('./npc-integration.cjs');
 require('./npc-visual-bounds.cjs');
+require('./researcher-asset.cjs');
 require('./combat-feedback.cjs');
 require('./menu-ui.cjs');
 require('./mobile-controls.cjs');

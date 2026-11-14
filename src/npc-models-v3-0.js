@@ -1,4 +1,4 @@
-/** GoldenEye 077 v3.0: real-size skinned laboratory NPCs. */
+/** GoldenEye 077 v3.1: laboratory scientists plus female researcher Meshy. */
 (() => {
   'use strict';
   const WORLD=DamLevelBuilder.prototype;
@@ -28,6 +28,12 @@
   // World groups keep their original x/z/y and interaction locations.
   const SCIENTIST_HEIGHT=1.72;
   const DOCTOR_HEIGHT=1.75;
+  // A pesquisadora utiliza o terceiro GLB que já existe no repositório.
+  // Mantemos um cientista homem ao lado dela; ninguém é criado a mais.
+  const RESEARCHER_MODEL='Medica_Otimizada_Walk_Menos25MB';
+  const RESEARCHER_IDS=new Set(['sci_2','silo_scientist_2']);
+  const isResearcher=npc=>npc.role==='scientist'&&RESEARCHER_IDS.has(npc.id);
+  const findClip=(clips,pattern)=>(clips||[]).find(c=>pattern.test(c.name||''));
   function normalizeFallback(npc){
     if(npc.role!=='scientist'||npc.scientistFallbackReady)return;
     const anchor=new THREE.Group();
@@ -112,18 +118,34 @@
     if(Number.isFinite(delta)&&Math.abs(delta)>.02)
       model.position.y+=delta;
   }
-  function attach(npc,gltf){
+  function attach(npc,gltf,variant){
     // Independent outer transform is never targeted by the GLB's animation tracks.
     const actor=cloneActor(gltf.scene),model=new THREE.Group();
     model.add(actor);
-    model.name=npc.id==='dr_doak'?'Dra-GLB':'Scientist-GLB';
+    model.name=variant==='dra'?'Dra-GLB':
+      variant===RESEARCHER_MODEL?'Pesquisadora-GLB':'Scientist-GLB';
     const mixer=new THREE.AnimationMixer(actor),actions={};
-    for(const name of ['Idle','Talk','Walking']){
-      const clip=gltf.animations.find(c=>c.name===name);
-      if(clip)actions[name]=mixer.clipAction(clip);
+    const clips=gltf.animations||[];
+    const idle=findClip(clips,/idle|stand|breath|rest|parado/i);
+    const talk=findClip(clips,/talk|speak|dialog|convers|falar/i);
+    // Meshy exports sometimes call the only clip "Walk", "Take 001" or "ArmatureAction".
+    const walk=findClip(clips,/walk|run|stride|step|andar|locomot|move/i)||
+      (variant===RESEARCHER_MODEL?clips[0]:null);
+    if(idle)actions.Idle=mixer.clipAction(idle);
+    if(talk)actions.Talk=mixer.clipAction(talk);
+    if(walk)actions.Walking=mixer.clipAction(walk);
+    const walkOnlyIdle=!actions.Idle && !!actions.Walking;
+    if(walkOnlyIdle){
+      // Keep a natural pose when stationary instead of leaving the GLB in T pose.
+      const action=actions.Walking;
+      action.play();
+      action.time=Math.min((walk.duration||1)*.25,.4);
+      action.paused=true;
+      mixer.update(0);
+    }else{
+      actions.Idle?.play();
+      mixer.update(.02);
     }
-    actions.Idle?.play();
-    mixer.update(.02);
     model.updateMatrixWorld(true);
     const box=visualBounds(model,true),size=box.getSize(new THREE.Vector3());
     if(!Number.isFinite(size.y)||size.y<=.001){npc.modelStatus='fallback';return}
@@ -139,10 +161,11 @@
     for(const child of [...npc.mesh.children]){npc.mesh.remove(child);dispose(child)}
     npc.mesh.add(model);npc.modelStatus='ready';
     npc.visual={
-      model,actor,mixer,actions,current:actions.Idle,
-      lastPos:npc.mesh.position.clone(),
+      model,actor,mixer,actions,current:actions.Idle||(walkOnlyIdle?actions.Walking:null),
+      walkOnlyIdle,lastPos:npc.mesh.position.clone(),
       targetHeight,scaleCheckAge:0
     };
+    npc.modelVariant=variant;
     stabilizeHeight(npc,true);
     // Corpses can leave levelGroup before clear(); stop and release their skeleton.
     const cleanup=()=>{
@@ -162,18 +185,19 @@
     const level=this.levelGroup;
     this.npcTemplates=[];
     const targets=[
-      {path:'dra',npcs:this.npcs.filter(n=>id==='facility'&&n.id==='dr_doak')},
-      {path:'scientist',npcs:this.npcs.filter(n=>n.role==='scientist')}
+      {path:'dra',npcs:this.npcs.filter(n=>id==='facility'&&n.id==='dr_doak'),label:'Dra.'},
+      {path:'scientist',npcs:this.npcs.filter(n=>n.role==='scientist'&&!isResearcher(n)),label:'Cientista'},
+      {path:RESEARCHER_MODEL,npcs:this.npcs.filter(isResearcher),label:'Pesquisadora'}
     ];
-    for(const {path,npcs} of targets){
+    for(const {path,npcs,label} of targets){
       if(!npcs.length)continue;
-      npcs.forEach(n=>{n.displayName=path==='dra'?'Dra.':'Cientista';n.modelStatus='loading'});
+      npcs.forEach(n=>{n.displayName=label;n.modelStatus='loading'});
       new THREE.GLTFLoader().load('assets/models/'+path+'.glb',gltf=>{
         if(this.levelGroup!==level){dispose(gltf.scene);return}
         this.npcTemplates.push(gltf.scene);
         for(const npc of npcs){
           if(npc.dead||npc.corpseRemoved){npc.modelStatus='fallback';continue}
-          attach(npc,gltf);
+          attach(npc,gltf,path);
         }
       },undefined,()=>{
         if(this.levelGroup===level)npcs.forEach(n=>{n.modelStatus='fallback'});
@@ -196,7 +220,8 @@
     const result=build.apply(this,arguments);this.loadDoctor(id);return result;
   };
   if(typeof window!=='undefined')window.GoldenEyeNPCScale={
-    version:'3.0',visualBounds,stabilizeHeight,
+    version:'3.1',visualBounds,stabilizeHeight,
+    researcherModel:RESEARCHER_MODEL,researcherIds:Array.from(RESEARCHER_IDS),
     scientistHeight:SCIENTIST_HEIGHT,doctorHeight:DOCTOR_HEIGHT
   };
   if(typeof GoldenEyeDamGame==='undefined')return;
@@ -211,7 +236,15 @@
       const moving=npc.mesh.position.distanceToSquared(v.lastPos)>.00001;
       const close=npc.position.distanceTo(this.player.pos)<3.5;
       const action=v.actions[moving?'Walking':close?'Talk':'Idle']||v.actions.Idle;
-      if(action&&action!==v.current){v.current?.fadeOut(.2);action.reset().fadeIn(.2).play();v.current=action}
+      if(v.walkOnlyIdle){
+        // If the female file contains only a Walk clip, freeze its pose
+        // while idle and resume the exact same action while moving.
+        v.actions.Walking.paused=!moving;
+      }else if(action&&action!==v.current){
+        v.current?.fadeOut(.2);
+        action.reset().fadeIn(.2).play();
+        v.current=action;
+      }
       v.mixer.update(step);
       v.scaleCheckAge=(v.scaleCheckAge||0)+step;
       if(v.scaleCheckAge>=.22){
