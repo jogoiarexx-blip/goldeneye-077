@@ -1204,6 +1204,35 @@
         this.addBox(0, 2.1, 40, 36, 4.4, 1.0, matWall, true);
         this.addBox(0, 2.1, -87, 36, 4.4, 1.0, matWall, true);
 
+        // AUDITORIA DE GEOMETRIA: acabamento fixado às paredes e ao teto.
+        // A face interna do muro está em X=±17.5 e a face inferior do teto
+        // fica em Y=4.15. Todos os apliques ficam dentro desses limites.
+        const matFrame = new THREE.MeshStandardMaterial({
+          color: 0x64748b, metalness: 0.53, roughness: 0.45
+        });
+        const matLamp = new THREE.MeshBasicMaterial({color:0xdff7ff});
+        const matInset = new THREE.MeshStandardMaterial({
+          color: 0x394b5a, metalness:0.17, roughness:0.76
+        });
+        for(const x of [-17.43,17.43]){
+          for(const z of [29,17,5,-7,-19,-31,-43,-55,-67,-79]){
+            // Frisos embutidos na alvenaria: sem colisão extra.
+            this.addBox(x,2.12,z,.075,3.42,.12,matFrame,false,false);
+            this.addBox(x,.14,z,.10,.20,9,matInset,false,false);
+          }
+        }
+        for(const z of [32,20,8,-5,-18,-29,-42,-55,-68,-80]){
+          // Fixtures de duas barras fora das tubulações centrais (X=±2.2).
+          for(const x of [-7.0,7.0]){
+            this.addBox(x,4.07,z,3.5,.12,.66,matFrame,false,false);
+            this.addBox(x,3.985,z,3.04,.045,.32,matLamp,false,false);
+          }
+        }
+        // Portais e bordas superiores deixam clara a divisão de setores.
+        for(const z of [26,14,-34]){
+          this.addBox(0,4.045,z,7.3,.20,.64,matFrame,false,false);
+        }
+
         // Tubulações químicas industriais percorrendo o teto da Facility
         for (let zPipe = 24; zPipe >= -80; zPipe -= 26) {
           const pipeL = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 24, 10), matPipeGreen);
@@ -1228,15 +1257,36 @@
         // Antes uma parede inteira bloqueava a única passagem inicial da Facility.
         this.addBox(-11.0, 2.1, 26, 14, 4.2, 0.5, matTile, true);
         this.addBox(11.0, 2.1, 26, 14, 4.2, 0.5, matTile, true);
-        // Cabines clássicas do banheiro (Z = +20) com portas de madeira escura
-        [-12, -8.5, -5.0, -1.5].forEach(cx => {
-          this.addBox(cx, 1.5, 21, 0.25, 3.0, 3.2, matTile, true);
-          this.addBox(cx + 1.4, 1.4, 19.4, 1.6, 2.4, 0.15, matSteel, false);
+        // Cabines de banheiro: portas penduradas em dobradiças reais,
+        // em vez de placas que começavam 0.5m longe das divisórias.
+        [-12, -8.5, -5.0, -1.5].forEach((cx, i) => {
+          this.addBox(cx,1.5,21,.25,3.0,3.2,matTile,true);
+          const hinge=new THREE.Group();
+          hinge.position.set(cx+.13,0,19.4);
+          hinge.rotation.y=-.38-(i%2)*.16;
+          const door=new THREE.Mesh(new THREE.BoxGeometry(1.72,2.36,.12),matSteel);
+          door.position.set(.86,1.37,0);
+          hinge.add(door);
+          const grip=new THREE.Mesh(new THREE.BoxGeometry(.09,.18,.045),matFrame);
+          grip.position.set(1.47,1.38,.09);
+          hinge.add(grip);
+          this.levelGroup.add(hinge);
+          // A porta já está visualmente entreaberta; sem collider invisível.
         });
-        // Bancada de pias + Espelhos de vidro quebráveis acima das pias
-        this.addBox(10, 0.9, 20, 6.5, 1.8, 1.2, matTile, true);
-        this.addBreakableGlass(8.2, 2.35, 20.5, 2.4, 1.2, 0.08);
-        this.addBreakableGlass(11.8, 2.35, 20.5, 2.4, 1.2, 0.08);
+        // Espelhos antes flutuavam em Z=20.5 sem nenhuma parede atrás.
+        // Painel de apoio verdadeiro, com superfície dos espelhos encostada.
+        this.addBox(10,1.65,21.0,7.6,3.3,.32,matTile,true);
+        this.addBox(10,.9,20,6.5,1.8,1.2,matTile,true);
+        this.addBreakableGlass(8.2,2.47,20.79,2.4,1.2,.08);
+        this.addBreakableGlass(11.8,2.47,20.79,2.4,1.2,.08);
+        // Lavatórios sobre a bancada, sem flutuar acima dela.
+        for(const x of [8.2,11.8]){
+          const basin=new THREE.Mesh(new THREE.CylinderGeometry(.42,.36,.11,14),matFrame);
+          basin.position.set(x,1.83,19.9);
+          const tap=new THREE.Mesh(new THREE.CylinderGeometry(.037,.045,.25,8),matSteel);
+          tap.position.set(x,2.02,20.13);
+          this.levelGroup.add(basin,tap);
+        }
         this.addPickup('ammo', 14.5, 0.5, 18.5);
         this.addAlarmBox('fac_alarm_1', -1.8, 1.8, 14.4, 0);
 
@@ -1267,6 +1317,13 @@
         this.addBox(5.5, 3.65, -6.5, 0.5, 1.1, 9.0, matWall, true);
         this.addBreakableGlass(5.5, 2.1, -6.5, 0.1, 2.0, 8.6);
         this.addBox(5.5, 2.1, -17.0, 0.5, 4.2, 12.0, matWall, true);
+        // Caixilhos ancorados nas paredes, não placas soltas sobre vidros.
+        for(const [wx,wz] of [[-4.5,-2.5],[5.5,-6.5]]){
+          for(const y of [1.1,3.1])
+            this.addBox(wx,y,wz,.29,.105,9.0,matFrame,false,false);
+          for(const z of [wz-4.4,wz+4.4])
+            this.addBox(wx,2.1,z,.29,2.0,.11,matFrame,false,false);
+        }
 
         // Bancadas de laboratório com centrífugas, tubos de ensaio luminescentes e computadores
         [-11.5, 11.5].forEach(lx => {
@@ -1299,11 +1356,20 @@
         this.addCharacterNPC('sci_3', 'scientist', -12.0, -19, 1.2, 0xf1f5f9);
         this.addPickup('armor', -14.8, 0.85, -24.5);
 
-        // 3. SETOR 3: SALA DE CONTROLE DE SEGURANÇA & PORTA DA CÂMARA DE ENGARRAFAMENTO (Z = -30 a -44)
-        this.addBox(-9.5, 2.1, -34, 16, 4.2, 0.6, matWall, true);
-        this.addBox(10.5, 2.1, -34, 14, 4.2, 0.6, matWall, true);
-        // Janela de observação blindada da sala de controle para a câmara de tanques
-        this.addBreakableGlass(-8.5, 2.2, -33.65, 5.5, 1.5, 0.1);
+        // 3. SETOR 3: CONTROLE / PORTA DA CÂMARA DE ENGARRAFAMENTO.
+        // A janela antiga estava DESENHADA POR CIMA de uma parede sólida!
+        // Abrir o vão em quatro painéis preserva a colisão do peitoril.
+        this.addBox(-14.375,2.1,-34,6.25,4.2,.6,matWall,true);
+        this.addBox(-3.625,2.1,-34,4.25,4.2,.6,matWall,true);
+        this.addBox(-8.5,.70,-34,5.5,1.4,.6,matWall,true);
+        this.addBox(-8.5,3.6,-34,5.5,1.2,.6,matWall,true);
+        this.addBox(10.5,2.1,-34,14,4.2,.6,matWall,true);
+        this.addBreakableGlass(-8.5,2.2,-33.65,5.5,1.5,.1);
+        // A moldura fica sobre o paramento, não atravessa o portão.
+        for(const x of [-11.25,-5.75])
+          this.addBox(x,2.2,-33.64,.12,1.55,.1,matFrame,false,false);
+        for(const y of [1.44,2.96])
+          this.addBox(-8.5,y,-33.64,5.55,.09,.10,matFrame,false,false);
         this.addSecurityGate('fac_gate_2', 1.0, -34, 4.6, matSteel, matHazard);
         this.addSecurityCamera(-1.8, 3.6, -33.4, 0.25);
         this.addAlarmBox('fac_alarm_2', -4.2, 1.8, -33.5, 0);
@@ -1320,9 +1386,23 @@
         });
 
         // 4. SETOR 4: CÂMARA DE ENGARRAFAMENTO, ESTEIRA INDUSTRIAL, 006 & 5 TANQUES QUÍMICOS (Z = -46 a -85)
-        // Passarelas superiores metálicas nas laterais da câmara e pilares industriais
-        this.addBox(-15.2, 2.8, -62, 3.6, 0.28, 36, matSteel, false);
-        this.addBox(15.2, 2.8, -62, 3.6, 0.28, 36, matSteel, false);
+        // Passarelas técnicas agora têm colunas APOIADAS NO PISO.
+        // Antes a plataforma Y=2.8 pairava sem nenhum pilar sob ela.
+        for(const side of [-1,1]){
+          const x=side*15.2;
+          const deck=this.addBox(x,2.8,-62,3.6,.28,36,matSteel,false,false);
+          deck.receiveShadow=true;
+          for(const z of [-78,-62,-46]){
+            // Pilar vai de Y=0 até Y=2.70, encaixando no tablado.
+            this.addBox(side*16.10,1.35,z,.38,2.70,.38,matFrame,true);
+            this.addBox(side*15.2,2.61,z,3.4,.12,.30,matFrame,false,false);
+          }
+          const innerX=side*13.54;
+          for(const y of [3.37,3.97])
+            this.addBox(innerX,y,-62,.09,.09,35.6,matFrame,false,false);
+          for(const z of [-79,-70,-61,-52,-45])
+            this.addBox(innerX,3.55,z,.09,1.05,.11,matFrame,false,false);
+        }
         [[-10, -52], [10, -52], [-10, -70], [10, -70]].forEach(([px, pz]) => {
           this.addBox(px, 2.1, pz, 1.4, 4.2, 1.4, matSteel, true);
         });
