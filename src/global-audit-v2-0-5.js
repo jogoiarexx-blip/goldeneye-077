@@ -71,7 +71,7 @@
     for(const guard of this.guards){
       if(guard.state!=='DEAD'||guard.corpseRemoved)continue;
       guard.corpseAge=(guard.corpseAge??0)+step;
-      if(guard.corpseAge>=BODY_SECONDS)
+      if(guard.corpseAge>=BODY_SECONDS-1e-6)
         releaseCorpse(this,guard,this.guards);
     }
     // Cientistas abatidos (em dificuldades que permitem prosseguir)
