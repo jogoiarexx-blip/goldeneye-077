@@ -674,8 +674,8 @@
             tri(corners[i], back[j], corners[j]);
           }
           const geo = new THREE.BufferGeometry();
-          geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-          geo.computeVertexNormals();
+          geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+          if (typeof geo.computeVertexNormals === 'function') geo.computeVertexNormals();
           return mesh(name, geo, material, 0, 0, 0, true);
         };
 
@@ -710,7 +710,7 @@
           const flap = mesh('flap', new THREE.BoxGeometry(3.5, 0.07, 0.38),
             engineMat, side * 5.28, 3.45, 1.01);
           flap.rotation.y = -side * 0.06;
-          const roundel = mesh('marca_asa', new THREE.CircleGeometry(0.46, 12),
+          const roundel = mesh('marca_asa', new THREE.RingGeometry(0, 0.46, 12),
             accentMat, side * 6.1, 3.54, 0.17);
           roundel.rotation.x = -Math.PI / 2;
           panel('estabilizador_horizontal', [
