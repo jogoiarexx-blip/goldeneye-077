@@ -22,6 +22,7 @@ class Object3D{
  }
  add(...children){this.children.push(...children)}
  remove(obj){this.children=this.children.filter(x=>x!==obj)}
+ traverse(fn){fn(this);for(const child of this.children)child.traverse?.(fn)}
 }
 class Geometry{
  constructor(...dimensions){this.parameters={};this.dimensions=dimensions;this.attributes={};}
@@ -243,5 +244,17 @@ const runwayTower=level.levelGroup.children.find(x=>
 assert.ok(runwayTower&&Math.abs(runwayTower.position.y-5.2)<.01,
   'Torre da Runway deve ficar apoiada no teto a 5.2m');
 assert.equal(level.damJumpAnchor,null,'Bungee não pode aparecer na Runway');
+// Teste global de descarte: geometrias/materiais/texturas compartilhadas
+// precisam ser liberados somente uma vez, não a cada mesh do mesmo material.
+const disposed={geometry:0,material:0,texture:0};
+const geo=new Geometry();geo.dispose=()=>disposed.geometry++;
+const material=new Mat();material.dispose=()=>disposed.material++;
+material.map={dispose(){disposed.texture++}};
+level.levelGroup.add(new Mesh(geo,material),new Mesh(geo,material));
+level.clear();
+assert.deepEqual(disposed,{geometry:1,material:1,texture:1},
+  'Reiniciar uma fase precisa liberar recursos GPU sem duplicação');
+console.log('OK Dam v2.0.2: torres no solo, paisagem sem cubos gigantes,');
+console.log('rotas entre missões e limpeza de geometrias/texturas.');
 console.log('OK Dam v2.0.1: plataforma acessível, parapeito aberto, limite local,');
 console.log('câmera de queda/corda, soldados equipados, morte animada e alerta em equipe.');
