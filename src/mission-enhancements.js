@@ -146,6 +146,13 @@
   };
   function guideTarget(gameInstance, id) {
     const level = gameInstance.levelBuilder;
+    // Em Surface 2 o jogador precisa abrir o checkpoint para chegar ao helicóptero.
+    const gate = gameInstance.currentMissionId === 'surface2'
+      ? level.gates.find(g => g.id === 's2_gate') : null;
+    if (gate && !gate.isOpen && (id === 's2_disable_helicopter' || id === 's2_bunker_entry')) {
+      const reader = level.interactables.find(i => i.id === 's2_gate_switch' && !i.completed);
+      if (reader) return reader.position;
+    }
     let entries = [];
     if (id === 'disable_alarms') entries = level.alarms.filter(x => !x.destroyed);
     else if (id === 'destroy_tanks') entries = level.tanks.filter(x => !x.destroyed);
@@ -179,7 +186,12 @@
         Math.abs(angle) >= Math.PI * 3 / 4 ? '↓' : angle > 0 ? '→' : '←';
       distance = ' · ' + Math.round(Math.hypot(x, z)) + 'm ' + direction;
     }
-    view.textContent = 'DIRETIVA: ' + (labels[objective.id] || objective.title) + distance;
+    const gatePending = gameInstance.currentMissionId === 'surface2' &&
+      ['s2_disable_helicopter', 's2_bunker_entry'].includes(objective.id) &&
+      gameInstance.levelBuilder.gates.some(g => g.id === 's2_gate' && !g.isOpen);
+    view.textContent = gatePending
+      ? 'ACESSO: ABRIR PORTÃO NORTE' + distance
+      : 'DIRETIVA: ' + (labels[objective.id] || objective.title) + distance;
   }
 
   const originalUpdate = game.update;
