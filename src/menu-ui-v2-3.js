@@ -20,9 +20,7 @@
       if (!locked) unlocked++;
       btn.setAttribute('aria-current', String(active));
       btn.setAttribute('aria-pressed', String(active));
-      if (!btn.hasAttribute('title')) {
-        btn.title = locked ? 'Complete a missão anterior para desbloquear' : 'Selecionar missão';
-      }
+      btn.title = locked ? 'Complete a missão anterior para desbloquear' : 'Selecionar missão';
     }
     const summary = byId('campaign-progress');
     if (summary) summary.textContent = unlocked + ' DE 10 DISPONÍVEIS';

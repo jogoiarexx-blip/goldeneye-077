@@ -55,7 +55,7 @@
   border:1px solid rgba(136,177,201,.17);background:rgba(3,11,22,.47);
   padding:14px;border-radius:15px;min-width:0;
 }
-#screen-dossier .mission-map-panel>.grid {
+#screen-dossier .mission-map-panel .mission-list-scroll>.grid {
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
   gap:9px;margin-bottom:0;
 }
@@ -239,7 +239,7 @@
   #screen-dossier .mi6-workspace {grid-template-columns:minmax(0,1fr);gap:10px}
   #screen-dossier .mission-map-panel,#screen-dossier .mission-ops-panel {padding:12px}
   #screen-dossier .mission-list-scroll {overflow-x:auto;overscroll-behavior-x:contain;padding:2px 2px 11px}
-  #screen-dossier .mission-map-panel>.grid {
+  #screen-dossier .mission-map-panel .mission-list-scroll>.grid {
     grid-template-columns:repeat(5,minmax(140px,1fr));grid-template-rows:repeat(2,64px);
     grid-auto-flow:column;min-width:740px;gap:7px;
   }
