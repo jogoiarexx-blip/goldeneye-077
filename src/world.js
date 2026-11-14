@@ -141,6 +141,7 @@
         this.animatedProps = [];
         this.damJumpAnchor = null;
         this.damJumpPoint = null;
+        this.pickupBadges = null;
         this.planeMesh = null;
         this.tankVehicle = null;
       }
@@ -313,41 +314,124 @@
       addPickup(type, x, y, z) {
         const group = new THREE.Group();
         group.position.set(x, y, z);
+        group.userData.pickupType = type;
 
-        let mesh;
+        // Silhuetas legíveis mesmo sem texturas externas: munição = caixa +
+        // cartuchos, colete = placas de proteção e alças. A escala mantém
+        // a área de coleta original (raio 1.8 do motor).
+        const matMetal = new THREE.MeshStandardMaterial({
+          color: 0x243449, roughness: 0.45, metalness: 0.64
+        });
+        const matAmmo = new THREE.MeshStandardMaterial({
+          color: 0x50694c, roughness: 0.73, metalness: 0.21
+        });
+        const matBrass = new THREE.MeshStandardMaterial({
+          color: 0xfbbf65, metalness: 0.73, roughness: 0.32
+        });
+        const matArmor = new THREE.MeshStandardMaterial({
+          color: 0x137f96, roughness: 0.54, metalness: 0.25
+        });
+        const matArmorDark = new THREE.MeshStandardMaterial({
+          color: 0x114454, roughness: 0.76, metalness: 0.17
+        });
+        const matWhite = new THREE.MeshBasicMaterial({ color: 0xe0f2fe });
+        const addPart = (geo, mat, px, py, pz) => {
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.position.set(px, py, pz);
+          mesh.castShadow = false;
+          group.add(mesh);
+          return mesh;
+        };
+
         if (type === 'armor') {
-          mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(0.55, 0.65, 0.28),
-            new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.4, metalness: 0.3 })
-          );
-        } else if (type === 'sniper') {
-          mesh = new THREE.Group();
-          const body = new THREE.Mesh(
-            new THREE.BoxGeometry(0.12, 0.16, 0.95),
-            new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.85, roughness: 0.25 })
-          );
-          const scope = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.035, 0.035, 0.38, 10),
-            new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.9, roughness: 0.15 })
-          );
-          scope.rotation.x = Math.PI / 2;
-          scope.position.y = 0.13;
-          mesh.add(body, scope);
+          // Colete real em miniatura: torso, ombreiras, costuras e emblema.
+          addPart(new THREE.BoxGeometry(.68,.78,.25),matArmor,0,0,0);
+          addPart(new THREE.BoxGeometry(.52,.43,.038),matArmorDark,0,.11,.146);
+          for(const side of [-1,1]){
+            addPart(new THREE.BoxGeometry(.20,.31,.26),matArmorDark,
+              side*.40,.33,-.014);
+            addPart(new THREE.BoxGeometry(.13,.57,.08),matMetal,
+              side*.26,.06,-.05);
+            addPart(new THREE.BoxGeometry(.10,.23,.045),matWhite,
+              side*.20,.06,.176);
+          }
+          addPart(new THREE.BoxGeometry(.64,.095,.29),matMetal,0,-.30,0);
+          const shield = new THREE.Mesh(new THREE.OctahedronGeometry(.15,0),matWhite);
+          shield.position.set(0,.15,.205);
+          shield.rotation.z=Math.PI/4;
+          group.add(shield);
+          addPart(new THREE.BoxGeometry(.14,.19,.05),matArmorDark,0,.52,0);
+        } else if(type === 'ammo') {
+          // Caixa de munição com tampa, fecho e 5 cartuchos de latão visíveis.
+          addPart(new THREE.BoxGeometry(.75,.38,.49),matAmmo,0,-.13,0);
+          addPart(new THREE.BoxGeometry(.78,.075,.53),matMetal,0,.085,0);
+          addPart(new THREE.BoxGeometry(.35,.11,.044),matBrass,0,-.04,.277);
+          addPart(new THREE.BoxGeometry(.40,.09,.24),matMetal,0,.145,-.04);
+          for(let i=0;i<5;i++){
+            const px=-.26+i*.13;
+            addPart(new THREE.CylinderGeometry(.045,.052,.35,8),
+              matBrass,px,.32,.035);
+            addPart(new THREE.ConeGeometry(.045,.12,8),
+              matWhite,px,.55,.035);
+          }
         } else {
-          mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(0.45, 0.3, 0.35),
-            new THREE.MeshStandardMaterial({ color: 0x4d7c0f, roughness: 0.6 })
+          // Rifle especial continua reconhecível e recolhível.
+          addPart(new THREE.BoxGeometry(.12,.16,.95),matMetal,0,0,0);
+          const scope = addPart(
+            new THREE.CylinderGeometry(.035,.035,.38,10),matWhite,
+            0,.13,0
           );
+          scope.rotation.x=Math.PI/2;
         }
-        mesh.castShadow = true;
-        group.add(mesh);
-        this.levelGroup.add(group);
 
+        // Aro iluminado no chão e legenda 2D que sempre encara a câmera.
+        const baseColor=type==='armor'?0x22d3ee:
+          type==='ammo'?0xfbbf24:0x38bdf8;
+        const ring=new THREE.Mesh(
+          new THREE.RingGeometry(.45,.55,24),
+          new THREE.MeshBasicMaterial({
+            color:baseColor,transparent:true,opacity:.72,
+            side:THREE.DoubleSide,depthWrite:false
+          })
+        );
+        ring.rotation.x=-Math.PI/2;
+        ring.position.y=type==='armor' ? -.73 : -.40;
+        ring.raycast=()=>{};
+        group.add(ring);
+        if(type==='ammo'||type==='armor'){
+          this.pickupBadges=this.pickupBadges||{};
+          let badgeTexture=this.pickupBadges[type];
+          if(!badgeTexture){
+            const canvas=document.createElement('canvas');
+            canvas.width=256;canvas.height=96;
+            const ctx=canvas.getContext('2d');
+            ctx.clearRect(0,0,256,96);
+            ctx.fillStyle='rgba(5,15,30,.86)';
+            ctx.fillRect(4,15,248,64);
+            ctx.fillStyle=type==='armor'?'#22d3ee':'#fbbf24';
+            ctx.fillRect(4,15,248,5);
+            ctx.font='bold 29px sans-serif';
+            ctx.textAlign='center';
+            ctx.textBaseline='middle';
+            ctx.fillText(type==='armor'?'COLETE':'MUNIÇÃO',128,49);
+            badgeTexture=new THREE.CanvasTexture(canvas);
+            this.pickupBadges[type]=badgeTexture;
+          }
+          const badge=new THREE.Sprite(new THREE.SpriteMaterial({
+            map:badgeTexture,transparent:true,depthWrite:false,
+            depthTest:true
+          }));
+          badge.position.set(0,type==='armor'?1.17:1.05,0);
+          badge.scale.set(1.52,.57,1);
+          badge.raycast=()=>{};
+          group.add(badge);
+        }
+        this.levelGroup.add(group);
         this.pickups.push({
           type,
-          position: new THREE.Vector3(x, y, z),
-          mesh: group,
-          collected: false
+          position:new THREE.Vector3(x,y,z),
+          mesh:group,
+          collected:false
         });
       }
 
@@ -1346,7 +1430,24 @@
         this.addBox(-7.5, 2.4, 36, 0.6, 4.8, 18, matConcrete, true);
         this.addBox(7.5, 2.4, 36, 0.6, 4.8, 18, matConcrete, true);
         this.addBox(0, 4.8, 36, 15.6, 0.4, 18, matMetal, false);
-        this.addSecurityGate('run_gate_1', 0, 27.5, 5.8, matMetal, matHazard);
+        // Checkpoint inteiro, de cerca a cerca. Antes havia SOMENTE o portão
+        // central e o jogador passava por fora, como na captura enviada.
+        // Paredes ocupam [-24.5,-2.9] e [2.9,24.5] no eixo X:
+        // sem espaços laterais, mas com a abertura central de 5.8m.
+        this.addBox(-13.7,2.65,27.5,21.6,5.3,.74,matHangar,true);
+        this.addBox(13.7,2.65,27.5,21.6,5.3,.74,matHangar,true);
+        this.addBox(0,5.05,27.5,6.2,.5,.95,matMetal,false,false);
+        this.addSecurityGate('run_gate_1',0,27.5,5.8,matMetal,matHazard);
+        // Reforço visual discreto: listras de perigo no acesso real.
+        for(const x of [-3.56,3.56]){
+          this.addBox(x,1.55,27.02,.12,2.95,.08,matHazard,false,false);
+        }
+        const checkpointMarker=new THREE.Mesh(
+          new THREE.BoxGeometry(2.3,.32,.09),
+          new THREE.MeshBasicMaterial({color:0x38bdf8})
+        );
+        checkpointMarker.position.set(0,4.62,27.0);
+        this.levelGroup.add(checkpointMarker);
 
         const switchRunGate = new THREE.Mesh(
           new THREE.BoxGeometry(0.22, 0.34, 0.22),
@@ -1397,8 +1498,9 @@
         });
 
         // Caminhão militar na pista + Barris explosivos estratégicos
+        // Caminhão estacionado APÓS o checkpoint, sem intersectar a parede.
         this.buildTruck(
-          15.5, 28, -0.25,
+          15.5, 19.5, -0.25,
           new THREE.MeshStandardMaterial({ color: 0x36453b, roughness: 0.6 }),
           new THREE.MeshStandardMaterial({ color: 0x4b5842, roughness: 0.75 }),
           new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9 })
