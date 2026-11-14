@@ -115,6 +115,8 @@
         this.interactables = [];
         this.guardSpawns = [];
         this.animatedProps = [];
+        this.damJumpAnchor = null;
+        this.damJumpPoint = null;
         this.planeMesh = null;
         this.tankVehicle = null;
       }
@@ -608,9 +610,14 @@
         });
       }
 
-      buildTransmissionTower(x, y, z, matSteel) {
+      buildTransmissionTower(x, baseY, z, matSteel) {
+        // baseY é a ALTURA DO PISO, não a altura da torre.
+        // O erro antigo passava 18 como baseY e deixava a torre no ar.
         const tower = new THREE.Group();
-        tower.position.set(x, y, z);
+        tower.position.set(x, baseY, z);
+        tower.userData.structureType = 'transmission-tower';
+        tower.userData.baseY = baseY;
+        tower.userData.height = 18;
 
         const legOffsets = [[-1.2, -1.2], [1.2, -1.2], [-1.2, 1.2], [1.2, 1.2]];
         legOffsets.forEach(([lx, lz]) => {
@@ -619,7 +626,24 @@
           leg.rotation.z = lx * 0.03;
           leg.rotation.x = -lz * 0.03;
           tower.add(leg);
+          const shoe = new THREE.Mesh(
+            new THREE.BoxGeometry(0.55, 0.24, 0.55), matSteel
+          );
+          shoe.position.set(lx * 0.6, 0.06, lz * 0.6);
+          tower.add(shoe);
         });
+
+        // Travamentos estruturais no fuste: diagonais leves e sem colisão.
+        for (const h of [3.0, 7.0, 11.0, 15.0]) {
+          for (const side of [-1, 1]) {
+            const brace = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.055, 0.055, 3.55, 5), matSteel
+            );
+            brace.position.set(side * 0.7, h, 0);
+            brace.rotation.z = side * 0.42;
+            tower.add(brace);
+          }
+        }
 
         [5, 10, 15].forEach((h, idx) => {
           const w = 2.6 - idx * 0.55;
@@ -710,22 +734,45 @@
           }
         }
 
-        // Reservatório superior à direita da barragem + Paredão rochoso + Montanhas nevadas
+        // Reservatório e encostas: os antigos dois cubos de 24/30m eram
+        // paredes retangulares gigantes junto à pista (print do usuário).
+        // Relevo em poucos volumes facetados, sempre fora da pista X -9..9.
         this.addBox(9.8, 0.75, -42, 0.45, 1.5, 174, matConcrete, true);
         this.addBox(26, -2.2, -55, 30, 1, 160, matWater, false, false);
-        this.addBox(16.5, 11, 22, 13, 24, 48, matRock, true);
-        this.addBox(42, 14, -42, 16, 30, 190, matRock, true);
         this.addBox(-34, -36, -42, 50, 1, 230, matWater, false, false);
 
-        const peakCoords = [
-          [-75, -18, -155, 42, 65],
-          [-25, -15, -172, 48, 72],
-          [32, -16, -165, 45, 68],
-          [-68, -20, -45, 38, 58],
-          [62, -12, -95, 44, 64]
+        // Camadas em rocha com base imersa no reservatório, sem colliders
+        // invisíveis atravessando a estrada e sem topo quadrado no horizonte.
+        const rockRidges = [
+          [27, 21, 11, 17], [36, 8, 16, 26], [44, -28, 17, 30],
+          [45, -65, 19, 31], [39, -98, 18, 24],
+          [27, 38, 8, 11]
         ];
-        peakCoords.forEach(([px, py, pz, rad, height]) => {
-          const mountain = new THREE.Mesh(new THREE.ConeGeometry(rad, height, 6), matSnow);
+        rockRidges.forEach(([rx, rz, radius, height], i) => {
+          const cliff = new THREE.Mesh(
+            new THREE.CylinderGeometry(
+              Math.max(1.2, radius * .16), radius, height, 7
+            ),
+            i % 2 ? matRock : matSnow
+          );
+          cliff.position.set(rx, -2.0 + height / 2, rz);
+          cliff.rotation.y = i * .61;
+          cliff.receiveShadow = true;
+          this.levelGroup.add(cliff);
+        });
+        // Montanhas distantes com perfil menos agressivo e FORA do
+        // enquadramento imediatamente acima do parapeito.
+        const peakCoords = [
+          [-83, -24, -174, 34, 49],
+          [-66, -26, -221, 43, 57],
+          [66, -24, -205, 33, 46],
+          [-85, -25, -69, 36, 51],
+          [83, -25, -114, 37, 53]
+        ];
+        peakCoords.forEach(([px, py, pz, rad, height], i) => {
+          const mountain = new THREE.Mesh(
+            new THREE.ConeGeometry(rad, height, 8), i % 2 ? matSnow : matRock
+          );
           mountain.position.set(px, py + height / 2, pz);
           this.levelGroup.add(mountain);
         });
@@ -862,9 +909,14 @@
         this.addSecurityCamera(2.8, 3.8, -50.4, -0.2);
         this.addPickup('ammo', 7.2, 0.55, -80.5);
 
-        // Torres de energia alta tensão ao longo da barragem
-        this.buildTransmissionTower(13.5, 18, -22, matMetal);
-        this.buildTransmissionTower(13.5, 18, -88, matMetal);
+        // Base das torres no piso (y=0): antes eram criadas com y=18,
+        // o que fazia os quatro pés flutuarem 18m acima da represa.
+        // Sapatas se apoiam sobre a borda do reservatório (nível -1.7).
+        for (const towerZ of [-22, -88]) {
+          this.addBox(13.5, -0.9, towerZ, 3.6, 1.8, 3.6,
+            matConcrete, false, false);
+          this.buildTransmissionTower(13.5, 0, towerZ, matMetal);
+        }
 
         // Sala do Servidor (Backup de Dados - 00 Agent)
         this.addBox(5.5, 2.0, -72, 8, 4.0, 0.4, matDarkWall, true);
