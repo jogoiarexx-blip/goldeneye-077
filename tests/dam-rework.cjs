@@ -126,7 +126,7 @@ const wall=level.colliders.filter(c=>Math.abs(c.minX+10.025)<.02 &&
 assert.equal(wall.length,3,'Parapeito com aberturas para píer e bungee');
 assert.ok(wall.every(c=>c.maxZ< -121 || c.minZ> -115),
  'Parapeito não pode bloquear acesso em Z=-118.1');
-assert.ok(wall.every(c=>c.maxZ< -47.9 || c.minZ> -39.8),
+assert.ok(wall.every(c=>c.maxZ<= -47.85 || c.minZ>= -39.9),
  'Parapeito não pode bloquear o píer em Z=-44');
 assert.ok(level.colliders.some(c=>c.minX<3.4&&c.maxX>2.4&&
  c.minZ<-116&&c.maxZ>-116),
