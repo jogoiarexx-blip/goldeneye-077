@@ -54,6 +54,12 @@ class Game {
   this.guards=[];this.sparks=[];this.stats={kills:0};this.scene=scene;
  }
  update(){}
+ // Replica o clamp de 50 ms usado pelo loop real do FPS.
+ loop(now){
+  const dt=Math.min(.05,(now-this.lastFrameTime)/1000);
+  this.lastFrameTime=now;
+  this.update(dt);
+ }
  selectMission(id){
   if(id==='invalid')return;
   this.currentMissionId=id;this.levelBuilder.build(id);
@@ -148,5 +154,52 @@ game.levelBuilder.interactables=[{id:'broken',radius:-1,position:new Vec()}];
 game.levelBuilder.build('facility');
 assert.deepEqual([...game.levelBuilder.auditReport],[],
  'O builder real deve produzir fase limpa sem avisos artificiais');
+// O tempo dos corpos deve acompanhar o relógio real, NÃO o dt da física.
+// Simula 10 FPS: 49 frames = 4.9 segundos, ainda visível; 50 = 5s.
+const slowFrameGuard=new Guard(new Obj());
+scene.add(slowFrameGuard.mesh);game.guards=[slowFrameGuard];
+game.appState='PLAYING';game.lastFrameTime=1000;
+assert.equal(slowFrameGuard.takeDamage(100),true);
+for(let frame=1;frame<50;frame++)game.loop(1000+frame*100);
+assert.equal(slowFrameGuard.corpseRemoved,false,
+ 'A 10 FPS o corpo deve durar os cinco segundos inteiros');
+game.loop(6000);
+assert.equal(slowFrameGuard.corpseRemoved,true,
+ 'A 10 FPS o corpo deve desaparecer aos cinco segundos, não após dez');
+
+// Pausa congela o cronômetro e retorno de uma aba suspensa não apaga
+// corpos imediatamente por causa de um salto enorme de timestamp.
+const pausedGuard=new Guard(new Obj());
+scene.add(pausedGuard.mesh);game.guards=[pausedGuard];
+pausedGuard.takeDamage(100);
+for(let f=1;f<=20;f++)game.loop(6000+f*100);
+assert.equal(pausedGuard.corpseRemoved,false);
+game.appState='PAUSED';
+for(let f=21;f<=70;f++)game.loop(6000+f*100);
+assert.equal(pausedGuard.corpseRemoved,false);
+game.appState='PLAYING';
+game.loop(50000);
+assert.equal(pausedGuard.corpseRemoved,false,
+ 'Após retornar à aba, o tempo suspenso não pode consumir cinco segundos');
+for(let f=1;f<=25;f++)game.loop(50000+f*100);
+assert.equal(pausedGuard.corpseRemoved,true);
+
+// As dez fases usam o mesmo ciclo, inclusive inimigos de reforço.
+const allMissions=['dam','facility','runway','surface1','bunker1',
+ 'silo','frigate','surface2','bunker2','statue'];
+for(const mission of allMissions){
+ game.currentMissionId=mission;
+ game.levelBuilder.build(mission);
+ const enemy=new Guard(new Obj());
+ scene.add(enemy.mesh);game.guards=[enemy];
+ assert.equal(enemy.takeDamage(100),true);
+ for(let frame=0;frame<49;frame++)game.update(.1);
+ assert.equal(enemy.corpseRemoved,false,mission+' removeu cedo');
+ game.update(.1);
+ assert.equal(enemy.corpseRemoved,true,mission+' não limpou corpo após 5s');
+ assert.equal(scene.children.includes(enemy.mesh),false,
+  mission+' deixou corpo na cena');
+}
+console.log('OK: 10 missões, frames lentos, retomada após pausa e suspensão.');
 console.log('OK auditoria global: corpos removidos em 5s, pausa respeitada,');
 console.log('NPCs, reforços, material compartilhado, troca de fase e neblina.');

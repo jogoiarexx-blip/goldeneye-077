@@ -1,5 +1,5 @@
 /**
- * GoldenEye 007 Remastered — auditoria global v2.0.5
+ * GoldenEye 007 Remastered — auditoria global v2.0.6
  * Todos os 10 mapas: ciclo de vida dos corpos, transição de missões,
  * atmosfera, validação não destrutiva de cenário.
  * Carregar depois de dam-rework-v2-0-1.js.
@@ -60,6 +60,26 @@
     materials.forEach(m=>m.dispose?.());
   }
 
+  // A física do jogo limita cada frame a 0.05 s em GAME.loop.
+  // Medimos separadamente o intervalo REAL dos frames para que a limpeza
+  // continue em 5 segundos mesmo abaixo de 20 FPS, sem acelerar a IA.
+  // Um teto de 0.5 s evita que uma aba suspensa remova tudo ao retornar.
+  const prevLoop=GAME.loop;
+  if(typeof prevLoop==='function'){
+    GAME.loop=function(now){
+      const prior=this.lastFrameTime;
+      const elapsed=Number.isFinite(now)&&Number.isFinite(prior)
+        ?Math.max(0,(now-prior)/1000):0;
+      this.corpseFrameDelta=Math.min(.5,elapsed);
+      try {
+        return prevLoop.call(this,now);
+      } finally {
+        // Atualizações não originadas do loop continuam usando o dt recebido.
+        this.corpseFrameDelta=undefined;
+      }
+    };
+  }
+
   // Uma única rota de atualização cobre guardas dos mapas iniciais e
   // reforços instanciados dinamicamente (Silo, Frigate, Bunker 2 etc).
   const prevUpdate=GAME.update;
@@ -67,8 +87,10 @@
     const wasPlaying=this.appState==='PLAYING';
     const result=prevUpdate.call(this,dt);
     if(!wasPlaying||this.appState!=='PLAYING')return result;
-    const step=Math.max(0,Math.min(.05,Number.isFinite(dt)?dt:0));
-    for(const guard of this.guards){
+    const rawStep=Number.isFinite(this.corpseFrameDelta)
+      ?this.corpseFrameDelta:dt;
+    const step=Math.max(0,Math.min(.5,Number.isFinite(rawStep)?rawStep:0));
+    for(const guard of this.guards||[]){
       if(guard.state!=='DEAD'||guard.corpseRemoved)continue;
       guard.corpseAge=(guard.corpseAge??0)+step;
       if(guard.corpseAge>=BODY_SECONDS-1e-6)
@@ -155,7 +177,7 @@
   };
 
   window.GoldenEyeAudit={
-    version:'2.0.5',
+    version:'2.0.6',
     bodySeconds:BODY_SECONDS,
     getReport:()=>window.gameInstance?.levelBuilder?.auditReport||[]
   };
