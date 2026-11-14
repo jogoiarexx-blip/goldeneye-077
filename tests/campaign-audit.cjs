@@ -207,6 +207,12 @@ for(const id of ids){
  }
  const opened=flood(world,world.gates);
  assert.ok(opened.size>250,id+': spawn bloqueado ou fase pouco navegável');
+ const closed=flood(world,[]);
+ if(world.gates.length){
+  assert.ok(closed.size<opened.size*.92,
+   id+': portões não bloqueiam área significativa do mapa ('+
+   closed.size+' de '+opened.size+' células)');
+ }
  const missingItems=[];
  for(const item of world.interactables){
   if(item.radius<=0)continue; // objetivos que são revelados depois
@@ -229,12 +235,12 @@ for(const id of ids){
  const baseline=world.levelGroup.children.length;
  result.push({id,colliders:world.colliders.length,objects:baseline,
   guards:world.guardSpawns.length,npcs:world.npcs.length,
-  gates:world.gates.length,accessibleCells:opened.size});
+  gates:world.gates.length,closedCells:closed.size,accessibleCells:opened.size});
 }
 assert.equal(result.length,10);
 console.log('AUDITORIA DE 10 MAPAS:');
 for(const item of result)console.log(
  item.id+': '+item.objects+' objetos, '+item.colliders+' colisores, '+
  item.guards+' guardas, '+item.gates+' portões, '+
- item.accessibleCells+' células navegáveis');
+ item.closedCells+'/'+item.accessibleCells+' células fechadas/abertas');
 console.log('OK 10 fases: builds, limites, colisão válida, objetivos, NPCs, guardas e pickups acessíveis.');
