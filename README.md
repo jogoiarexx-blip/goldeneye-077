@@ -12,6 +12,18 @@ Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy 
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
 
+## Melhorias da primeira missão — Dam v2.0.1
+
+Atualização corretiva focada na primeira missão, sem modificar o roteiro ou objetivos das outras fases.
+
+**Plataforma de salto reconstruída:** a passarela original ficava além do limite de movimento do jogador e atrás de um parapeito contínuo. Corrigimos a abertura na parede da barragem, o limite horizontal **apenas** na região do bungee, a superfície de aço, os corrimãos, os suportes, as faixas de segurança, o guincho/âncora e o círculo de salto na ponta. Use **E** na borda iluminada depois de cumprir os objetivos necessários da dificuldade.
+
+**Cinemática do bungee:** ao executar o salto, o personagem aparece em terceira pessoa, com arnês e corda conectados à plataforma. A sequência percorre preparação, lançamento, descida acompanhando o paredão e rebote da corda. A câmera tem múltiplos ângulos, há névoa leve próxima da água e as legendas mudam conforme a etapa. O corte dura cerca de 6 segundos e pode ser pulado pelos controles existentes. A fase Facility permanece desbloqueada ao concluir Dam.
+
+**Guardas melhorados na Dam:** proteção adicional no uniforme (alças, joelheiras, rádio, coldre), detalhes por função e reação ao dano. Os guardas abatidos não caem instantaneamente para uma pose atravessada; a queda e a posição do corpo são interpoladas. Guardas em alerta podem avisar um companheiro próximo **apenas com visão desobstruída**, sem alerta global ou soldados infinitos. O combate, patrulhas e as dificuldades das demais missões não foram alterados.
+
+**Validação automatizada:** `tests/dam-rework.cjs`, integrado ao `node tests/check.cjs`, constrói a geometria real da fase e testa a passagem no parapeito, o raio da plataforma, a exclusão de atalhos fora da área, a câmera/corda do salto, morte animada e comunicação de esquadrão. Não substitui jogar a fase inteira em um navegador com WebGL e verificar o resultado visual.
+
 ## Missão 10 — Statue (v2.0): Parque das Estátuas
 
 **St. Petersburg — investigação no parque noturno.** Nova fase 3D procedural baseada na seção 7.10 do GDD: parque extenso com 12 esculturas de pedra e bronze em pedestais, monumento/obelisco, ruínas, túneis em arcos, clareiras ligadas por caminhos, helicóptero abandonado, iluminação noturna, nove patrulhas finitas e cobertura tática. Otimizada com materiais compartilhados, neblina falsa de **9 planos translúcidos**, poucos pontos de luz e **130 partículas em um único objeto Points**, sem downloads de modelos ou faixas de áudio.
