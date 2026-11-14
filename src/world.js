@@ -818,8 +818,11 @@
         // Parapeito esquerdo sobre o abismo + contrafortes estruturais + comportas de água (Spillways)
         // Acesso real ao bungee: interrompe o parapeito em Z -121.4 .. -114.8.
         // A antiga parede contínua bloqueava toda a passagem até a plataforma.
-        this.addBox(-9.8, 0.75, -34.9, 0.45, 1.5, 159.8, matConcrete, true);
-        this.addBox(-9.8, 0.75, -125.2, 0.45, 1.5, 7.6, matConcrete, true);
+        // Duas aberturas reais: píer em Z=-44 e bungee em Z=-118.
+        // A versão anterior só abria o salto, isolando coletes e guarda do píer.
+        this.addBox(-9.8,0.75,2.575,.45,1.5,84.85,matConcrete,true);
+        this.addBox(-9.8,0.75,-81.35,.45,1.5,66.9,matConcrete,true);
+        this.addBox(-9.8,0.75,-125.2,.45,1.5,7.6,matConcrete,true);
         const matFoam = new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.55 });
         for (let z = 36; z >= -120; z -= 14) {
           this.addBox(-10.6, -18, z, 2.2, 38, 2.4, matConcrete, false);
@@ -1051,7 +1054,11 @@
         });
 
         // 5. SETOR D: Casa de Máquinas / Torre de Controle do Salto de Bungee + Turbina Giratória no Teto
-        this.addBox(5.5, 2.2, -116, 7.6, 4.4, 0.4, matDarkWall, true);
+        // Porta funcional na frente da sala de máquinas, não parede maciça.
+        // O vão X=3.3..5.9 dá acesso ao colete e à patrulha finais.
+        this.addBox(2.5,2.2,-116,1.6,4.4,.4,matDarkWall,true);
+        this.addBox(7.6,2.2,-116,3.4,4.4,.4,matDarkWall,true);
+        this.addBox(4.6,4.05,-116,2.6,.5,.45,matMetal,false,false);
         this.addBox(1.7, 2.2, -120.5, 0.4, 4.4, 9.0, matDarkWall, true);
         this.addBox(5.5, 4.5, -120.5, 8.0, 0.3, 9.6, matMetal, false);
         this.addBreakableGlass(1.68, 2.2, -118.0, 0.08, 1.4, 2.4);
