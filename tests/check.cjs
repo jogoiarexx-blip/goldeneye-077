@@ -11,7 +11,7 @@ const scripts = [...html.matchAll(/<script\s+src="(src\/[^"]+\.js)"\s+defer><\/s
   .map(m => m[1]);
 const expected = [
   'src/audio.js', 'src/missions.js', 'src/world.js', 'src/guards.js',
-  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js'
+  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js'
 ];
 assert.deepEqual(scripts, expected, 'Os scripts precisam carregar na ordem correta.');
 for (const rel of scripts) {
@@ -53,6 +53,19 @@ for (const token of [
 ]) assert.ok(silo.includes(token), 'Mecânica do Silo ausente: ' + token);
 assert.ok(html.includes('data-mission="silo"'), 'Silo não aparece no menu');
 assert.ok(html.includes('id="silo-countdown"'), 'HUD de tempo do Silo ausente');
+const frigate = fs.readFileSync(path.join(root, 'src/frigate-v1-7.js'), 'utf8');
+for (const token of [
+  "const ID = 'frigate'", 'WORLD.buildFrigateLevel',
+  "'frigate_rescue_hostages'", "'frigate_disarm_bridge'",
+  "'frigate_disarm_engine'", "'frigate_heli_tracker'", "'frigate_exit'",
+  "type:'frigate_hostage'", 'helicopterId', 'this.frigateDisarm',
+  "finished==='silo'", 'rescueComplete(this)', 'npc.frigateHostage=true',
+  'npc.dead', "this.failMission('REFÉM ATINGIDO"
+]) assert.ok(frigate.includes(token), 'Mecânica de Frigate ausente: ' + token);
+assert.ok(html.includes('data-mission="frigate"'), 'Frigate não aparece no menu');
+assert.ok(html.includes('id="frigate-bomb-progress"'), 'HUD do desarme ausente');
+const guideSource = fs.readFileSync(path.join(root, 'src/mission-enhancements.js'), 'utf8');
+assert.ok(guideSource.includes("id === 'frigate_rescue_hostages'"), 'Guia não mostra os reféns restantes');
 const gameSource = fs.readFileSync(path.join(root, 'src/game.js'), 'utf8');
 for (const crouch of [
   'toggleCrouch() {', 'TETO BAIXO', 'this.player.crouched ? 1.13 : 1.65',
@@ -72,4 +85,4 @@ for (const required of [
 const visuals = fs.readFileSync(path.join(root, 'src/world.js'), 'utf8');
 assert.ok(visuals.includes("addSecurityGate('fac_gate_2'"), 'Porta do laboratório ausente.');
 assert.ok(visuals.includes("buildEscapePlane("), 'Avião de fuga ausente.');
-console.log('OK: seis missões, módulos, objetivos, IA, portas e cutscenes (checagens estáticas).');
+console.log('OK: sete missões, módulos, objetivos, IA, portas e cutscenes (checagens estáticas).');
