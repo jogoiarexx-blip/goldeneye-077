@@ -132,7 +132,7 @@
   const labels = {
     disable_alarms: 'Neutralizar alarmes', place_modem: 'Instalar modem',
     data_backup: 'Interceptar dados', bungee: 'Plataforma de salto',
-    contact_doak: 'Localizar Dr. Doak', meet_006: 'Encontrar agente 006',
+    contact_doak: 'Localizar Dra.', meet_006: 'Encontrar agente 006',
     destroy_tanks: 'Destruir tanques químicos', facility_exit: 'Saída da instalação',
     ignition_key: 'Encontrar chave de ignição', destroy_emplacements: 'Destruir defesas',
     runway_intel: 'Planos de voo', runway_plane: 'Avião de fuga',

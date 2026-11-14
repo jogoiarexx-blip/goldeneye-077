@@ -50,6 +50,28 @@
         gain.connect(this.ctx.destination);
         osc.start(now);
         osc.stop(now + (silenced ? 0.09 : 0.2));
+        osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+
+        // Cached noise gives the shot a short crack; a low-pass keeps the
+        // suppressed pistol softer. No sound downloads or per-shot buffers.
+        if (!this.shotNoise) {
+          this.shotNoise = this.ctx.createBuffer(1, Math.ceil(this.ctx.sampleRate * 0.25), this.ctx.sampleRate);
+          const data = this.shotNoise.getChannelData(0);
+          for (let i=0; i<data.length; i++) data[i] = Math.random()*2-1;
+        }
+        const noise = this.ctx.createBufferSource();
+        const filter = this.ctx.createBiquadFilter(), envelope = this.ctx.createGain();
+        const duration = silenced ? 0.055 : 0.14;
+        noise.buffer = this.shotNoise;
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(silenced ? 1400 : 6500, now);
+        filter.frequency.exponentialRampToValueAtTime(silenced ? 350 : 900, now+duration);
+        envelope.gain.setValueAtTime(silenced ? 0.12 : 0.32, now);
+        envelope.gain.exponentialRampToValueAtTime(0.001, now+duration);
+        noise.connect(filter); filter.connect(envelope); envelope.connect(this.ctx.destination);
+        noise.onended = () => { noise.disconnect(); filter.disconnect(); envelope.disconnect(); };
+        noise.start(now); noise.stop(now+duration);
+
       }
 
       playReload() {

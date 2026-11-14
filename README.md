@@ -12,6 +12,18 @@ Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy 
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
 
+## Médica e cientistas — integração dos modelos enviados
+
+- A **Dra.** substitui o contato `dr_doak` no laboratório leste da **Facility (fase 2)**, em X=12,2 / Z=-18. Entrega o decodificador e as três minas pela interação existente; objetivos, dificuldades, portas e salvamento mantêm os mesmos IDs.
+- O cientista do ZIP substitui os três civis da Facility e os três do Silo. Reféns, Natalya e 006 conservam seus modelos e regras.
+- `dra.glb`: 10.320 triângulos, 66 ossos, 5.578.072 bytes. Refeito a partir do arquivo original com rig (39.908.684 bytes); substitui a versão estática anterior de 179.475 triângulos.
+- `scientist.glb`: 10.325 triângulos, 66 ossos; conversão do FBX enviado com texturas incorporadas. Ambos têm **Idle, Talk e Walking** criadas sobre os respectivos esqueletos. O salto/giro original **PowerSpinJump** foi preservado no arquivo do cientista, sem ser acionado durante conversas.
+- Espera animada à distância, gestos de conversa quando o jogador se aproxima e caminhada quando há deslocamento do NPC. Não cria patrulhas novas. A pausa e a morte congelam as animações.
+- Modelos ajustados a 1,75 m. Cada cientista usa seu próprio esqueleto; geometria e texturas são compartilhadas. Carregamento uma vez por tipo e missão, proteção contra respostas atrasadas e modelo procedural de reserva em caso de falha.
+- Disparos com clarão reutilizado na boca da arma (menor com silenciador) e camada de ruído filtrado no som procedural. Sem imagens, luzes dinâmicas ou arquivos de áudio adicionais.
+- Reprodução dos assets: `tools/prepare-npcs.py` com Blender e `tools/compress-glb-textures.py` com Pillow. Preservam geometria, UV e pesos; texturas de cor/normal em 2048 px e metal/roughness em 1024 px.
+- Validação: `node tests/check.cjs` inclui os GLBs com o carregador Three.js real, vértices animados finitos, esqueletos independentes, posição/altura, pausa, morte, recursos compartilhados, resposta atrasada, fallback, clarão e áudio. Prévia dos dois modelos renderizada no Blender. O teste WebGL `tests/player-model-browser.cjs` continua bloqueado neste ambiente pelo erro de sockets do Chromium; não houve validação completa jogando as fases no navegador.
+
 ## Jogador GLB — modelo 007 enviado
 
 - `assets/models/007.glb`: arquivo original preservado (4.991.548 bytes; 36.524 triângulos, 21.794 vértices, 32 ossos, três texturas JPEG incorporadas).

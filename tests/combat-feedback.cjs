@@ -1,0 +1,16 @@
+'use strict';
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),THREE=require('../vendor/three.min.js');
+const context=vm.createContext({THREE,window:{addEventListener(){}},console});
+vm.runInContext(fs.readFileSync(require.resolve('../src/game.js'),'utf8')+'\nthis.Game=GoldenEyeDamGame;',context);
+const game=Object.create(context.Game.prototype);game.createFirstPersonWeaponModel();
+assert.ok(game.muzzleFlash,'weapon should have reusable muzzle flash');
+assert.equal(game.muzzleFlash.visible,false);
+game.showMuzzleFlash(true);assert.equal(game.muzzleFlash.visible,true);const small=game.muzzleFlash.scale.x;
+game.showMuzzleFlash(false);assert.ok(game.muzzleFlash.scale.x>small);game.appState='PAUSED';game.updateMuzzleFlash(.1);assert.equal(game.muzzleFlash.visible,true);game.appState='PLAYING';game.updateMuzzleFlash(.1);assert.equal(game.muzzleFlash.visible,false);
+vm.runInContext(fs.readFileSync(require.resolve('../src/audio.js'),'utf8')+'\nthis.Audio=ProceduralAudio;',context);
+let buffers=0,sources=0;
+const param=()=>({setValueAtTime(){},exponentialRampToValueAtTime(){},linearRampToValueAtTime(){}});
+const node=()=>({connect(){},disconnect(){},start(){},stop(){},frequency:param(),gain:param(),Q:param()});
+const audio=new context.Audio();audio.ctx={currentTime:1,sampleRate:44100,destination:{},createOscillator:node,createGain:node,createBiquadFilter:node,createBuffer(){buffers++;return {getChannelData:()=>new Float32Array(11025)}},createBufferSource(){sources++;return node()}};
+audio.playShot(false);audio.playShot(true);assert.equal(sources,2,'noise layer for both weapons');assert.equal(buffers,1,'noise buffer reused');audio.enabled=false;audio.playShot(false);assert.equal(sources,2,'mute respected');
+console.log('OK combat: bounded reusable flash, pause/expiry, cached shot noise and mute.');

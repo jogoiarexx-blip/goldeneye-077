@@ -42,10 +42,10 @@
         subtitle: 'Missão 02 — Instalação Química Subterrânea',
         title: 'INSTALAÇÃO QUÍMICA (FACILITY)',
         introTag: 'FAC_INTRO // DUTOS DE VENTILAÇÃO',
-        introSub: '"Subsolo de Byelomorye. Desça pelos dutos, encontre o Dr. Doak e sabote os tanques de gás nervoso com 006."',
+        introSub: '"Subsolo de Byelomorye. Desça pelos dutos, encontre a Dra. e sabote os tanques de gás nervoso com 006."',
         outroTag: 'FAC_ESCAPE // SABOTAGEM CONCLUÍDA',
         outroSub: '"Tanques químicos destruídos. Escapando pelos túneis de acesso à pista de pouso!"',
-        briefingM: '"Alec Trevelyan (006) já está infiltrado na câmara de engarrafamento. Encontre nosso contato interno, Dr. Doak, obtenha o decodificador e destrua os tanques."',
+        briefingM: '"Alec Trevelyan (006) já está infiltrado na câmara de engarrafamento. Encontre a médica infiltrada, obtenha o decodificador e destrua os tanques."',
         briefingQ: '"Cuidado com os cientistas civis nos laboratórios. Use disparos precisos nos tanques químicos ou nos barris pressurizados."',
         spawn: { x: 0, y: 1.65, z: 36, yaw: 0 },
         difficulties: {
@@ -60,7 +60,7 @@
           SECRET_AGENT: {
             label: 'SECRET AGENT', guardHp: 80, guardDamage: 12, guardReaction: 0.72,
             objectives: [
-              { id: 'contact_doak', title: 'Contatar Dr. Doak e obter o Decodificador de Portas', type: 'npc' },
+              { id: 'contact_doak', title: 'Contatar a Dra. e obter o Decodificador de Portas', type: 'npc' },
               { id: 'meet_006', title: 'Encontrar Alec Trevelyan (006) na câmara de engarrafamento', type: 'npc' },
               { id: 'destroy_tanks', title: 'Destruir todos os tanques químicos da instalação (0/5)', type: 'tanks' },
               { id: 'facility_exit', title: 'Escapar pela porta blindada de saída', type: 'exit' }
@@ -69,7 +69,7 @@
           '00_AGENT': {
             label: '00 AGENT', guardHp: 100, guardDamage: 16, guardReaction: 0.5,
             objectives: [
-              { id: 'contact_doak', title: 'Contatar Dr. Doak e obter o Decodificador de Portas', type: 'npc' },
+              { id: 'contact_doak', title: 'Contatar a Dra. e obter o Decodificador de Portas', type: 'npc' },
               { id: 'meet_006', title: 'Encontrar Alec Trevelyan (006) na câmara de engarrafamento', type: 'npc' },
               { id: 'destroy_tanks', title: 'Destruir todos os tanques químicos da instalação (0/5)', type: 'tanks' },
               { id: 'minimize_civs', title: 'Preservar a vida dos cientistas civis', type: 'civilians' },

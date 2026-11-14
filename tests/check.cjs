@@ -147,6 +147,7 @@ require('./headshot.cjs');
 
 require('./player-model.cjs');
 
-require('./doctor-model.cjs');
+require('./npc-integration.cjs');
+require('./combat-feedback.cjs');
 require('./menu-ui.cjs');
 require('./runway-aircraft.cjs');

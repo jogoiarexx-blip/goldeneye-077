@@ -1436,7 +1436,7 @@
           completed: false, visualMesh: switchFac1
         });
 
-        // 2. SETOR 2: LABORATÓRIOS COM JANELAS DE VIDRO QUEBRÁVEIS & DR. DOAK (Z = +12 a -28)
+        // 2. SETOR 2: LABORATÓRIOS COM JANELAS DE VIDRO QUEBRÁVEIS & DRA. (Z = +12 a -28)
         // Divisórias das salas de pesquisa com aberturas para janelas de observação quebráveis
         this.addBox(-4.5, 2.1, 5.5, 0.5, 4.2, 7.0, matWall, true);
         this.addBox(-4.5, 0.55, -2.5, 0.5, 1.1, 9.0, matWall, true);
@@ -1472,12 +1472,12 @@
           });
         });
 
-        // Dr. Doak no laboratório leste (Z = -18, X = 12) + Cofre de Suprimentos
+        // Dra. no laboratório leste (Z = -18, X = 12) + Cofre de Suprimentos
         this.addCharacterNPC('dr_doak', 'doak', 12.2, -18, -Math.PI / 2, 0xf8fafc);
         this.interactables.push({
           id: 'contact_doak', type: 'npc',
           position: new THREE.Vector3(12.2, 1.2, -18), radius: 3.0,
-          prompt: 'Pressione [E] para falar com Dr. Doak (Receber Decodificador & Minas)',
+          prompt: 'Pressione [E] para falar com a Dra. (Receber Decodificador & Minas)',
           completed: false
         });
         this.addPickup('ammo', 15.2, 0.55, -21.5);

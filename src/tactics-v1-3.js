@@ -242,7 +242,7 @@
         else indicator.scale.setScalar(1);
         if (entry.requiresDoak && !gate.isOpen) {
           entry.prompt = needDecoder ?
-            'ACESSO RESTRITO: encontre Dr. Doak para obter o decodificador' :
+            'ACESSO RESTRITO: encontre a Dra. para obter o decodificador' :
             'Pressione [E] para utilizar o decodificador na porta blindada';
         }
       }

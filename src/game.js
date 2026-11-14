@@ -98,9 +98,31 @@
         silencer.position.set(0, 0.01, -0.26);
         this.fpSilencerMesh = silencer;
 
-        group.add(barrel, silencer);
+        this.muzzleFlash = new THREE.Mesh(
+          new THREE.OctahedronGeometry(0.065, 0),
+          new THREE.MeshBasicMaterial({color:0xffd78a,transparent:true,opacity:0.9,depthWrite:false})
+        );
+        this.muzzleFlash.visible = false;
+        this.muzzleFlashLife = 0;
+        group.add(barrel, silencer, this.muzzleFlash);
         group.position.set(0.24, -0.22, -0.42);
         return group;
+      }
+
+      showMuzzleFlash(silenced) {
+        if (!this.muzzleFlash) return;
+        this.muzzleFlash.position.set(0, 0.01, silenced ? -0.40 : -0.21);
+        this.muzzleFlash.scale.set(silenced ? 0.38 : 1, silenced ? 0.38 : 1, silenced ? 0.7 : 1.9);
+        this.muzzleFlash.rotation.z = Math.random() * Math.PI;
+        this.muzzleFlash.visible = true;
+        this.muzzleFlashLife = silenced ? 0.025 : 0.045;
+      }
+
+      updateMuzzleFlash(dt) {
+        if (!this.muzzleFlash || this.appState === 'PAUSED') return;
+        this.muzzleFlashLife = this.appState === 'PLAYING'
+          ? Math.max(0, this.muzzleFlashLife - Math.max(0,dt)) : 0;
+        this.muzzleFlash.visible = this.muzzleFlashLife > 0;
       }
 
       loadBestTime() {
@@ -533,6 +555,7 @@
         this.player.fireTimer = w.fireRate;
         this.stats.shotsFired++;
         this.audio.playShot(w.silenced);
+        this.showMuzzleFlash(w.silenced);
 
         // Animação de recuo na arma em 1ª pessoa
         this.weaponMeshGroup.position.z = -0.35;
@@ -889,7 +912,7 @@
                 const doakItem = this.levelBuilder.interactables.find(i => i.id === 'contact_doak');
                 if (doakObj && !doakObj.completed && (!doakItem || !doakItem.completed)) {
                   this.audio.playGadgetBeep(false);
-                  this.notifyHUD('ACESSO NEGADO: OBTENHA O DECODIFICADOR COM DR. DOAK');
+                  this.notifyHUD('ACESSO NEGADO: OBTENHA O DECODIFICADOR COM A DRA.');
                   return;
                 }
               }
@@ -917,7 +940,7 @@
               this.audio.playGadgetBeep(true);
               if (item.id === 'contact_doak') {
                 this.player.remoteMines += 3;
-                this.notifyHUD('DR. DOAK: "USE ESTE DECODIFICADOR NA PORTA BLINDADA E ESTAS MINAS REMOTAS [G]!"');
+                this.notifyHUD('DRA.: "USE ESTE DECODIFICADOR NA PORTA BLINDADA E ESTAS MINAS REMOTAS [G]!"');
               } else if (item.id === 'meet_006') {
                 const npc006 = this.levelBuilder.npcs.find(n => n.role === '006');
                 if (npc006) npc006.mesh.position.set(-14.5, 0, -48);
@@ -931,7 +954,7 @@
               this.audio.playGadgetBeep(true);
               if (item.id === 'contact_doak') {
                 this.player.remoteMines += 3;
-                this.notifyHUD('DR. DOAK ENTREGOU O DECODIFICADOR DE PORTAS E +3 MINAS REMOTAS!');
+                this.notifyHUD('DRA. ENTREGOU O DECODIFICADOR DE PORTAS E +3 MINAS REMOTAS!');
                 this.updateHUD();
               } else {
                 this.notifyHUD('CONTATO REALIZADO (ITEM SECUNDÁRIO NESTA DIFICULDADE)');
@@ -1020,6 +1043,7 @@
       }
 
       update(dt) {
+        this.updateMuzzleFlash(dt);
         // Animações ambientais contínuas (água ondulada, luzes de torre, portões e câmeras)
         if (this.appState !== 'PAUSED' && this.appState !== 'RESULTS') {
           this.simulationTime += dt;
