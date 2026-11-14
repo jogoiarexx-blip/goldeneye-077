@@ -147,7 +147,10 @@ assert.equal(ids.length,10);
 const result=[];
 function flood(level,openedGates){
  const b=level.bounds,step=1;
- const nx=Math.floor((b.maxX-b.minX)/step)+1;
+ // Dam tem dois acessos externos especiais: a ilha do píer (X=-17.6)
+ // e a passarela de bungee (X=-15.95). Simular o override do jogador.
+ const minX=b.isDam?-18:b.minX;
+ const nx=Math.floor((b.maxX-minX)/step)+1;
  const nz=Math.floor((b.maxZ-b.minZ)/step)+1;
  const visited=new Uint8Array(nx*nz),queue=[];
  const ignored=new Set(openedGates.map(g=>g.collider));
@@ -155,7 +158,13 @@ function flood(level,openedGates){
   if(ix<0||ix>=nx||iz<0||iz>=nz)return;
   const idx=iz*nx+ix;
   if(visited[idx])return;
-  const x=b.minX+ix*step,z=b.minZ+iz*step;
+  const x=minX+ix*step,z=b.minZ+iz*step;
+  if(b.isDam){
+   const pier=z>=-47.8&&z<=-40.2;
+   const jump=z>=-121.6&&z<=-114.5;
+   const minAllowed=pier?-17.6:jump?-15.95:b.minX;
+   if(x<minAllowed-.01)return;
+  }
   if(level.colliders.some(c=>
    !ignored.has(c)&&
    (c.maxY??5)>.40&&(c.minY??0)<1.8 &&
@@ -165,7 +174,7 @@ function flood(level,openedGates){
   visited[idx]=1;queue.push([ix,iz]);
  }
  const spawn=ctx.MISSIONS_DATA[level.currentId].spawn;
- push(Math.round((spawn.x-b.minX)/step),
+ push(Math.round((spawn.x-minX)/step),
   Math.round((spawn.z-b.minZ)/step));
  for(let i=0;i<queue.length;i++){
   const [ix,iz]=queue[i];
@@ -173,7 +182,7 @@ function flood(level,openedGates){
  }
  return {size:queue.length,reaches(p,r=2.8){
   return queue.some(([x,z])=>Math.hypot(
-   b.minX+x*step-p.x,b.minZ+z*step-p.z)<r);
+   minX+x*step-p.x,b.minZ+z*step-p.z)<r);
  }};
 }
 for(const id of ids){
