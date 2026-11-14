@@ -1,6 +1,6 @@
 # GoldenEye 007 Remastered — protótipo não oficial
 
-Protótipo de FPS de espionagem para navegador. Contém **cinco missões**: Dam, Facility, Runway, Surface 1 e Bunker 1, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
+Protótipo de FPS de espionagem para navegador. Contém **seis missões**: Dam, Facility, Runway, Surface 1, Bunker 1 e Silo, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
 
 ## Jogar pelo GitHub Pages
 
@@ -11,6 +11,20 @@ O repositório está configurado para publicar automaticamente da branch `main`,
 Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy from a branch**, **Branch: main**, **Folder: /(root)**. Veja o status em **Actions → pages build and deployment**. A página `404.html` oferece uma rota de volta para o jogo quando um endereço interno antigo é acessado.
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
+
+## Missão 06 — Silo (v1.6) e agachamento aperfeiçoado
+
+**Nova fase Kirghizstan / Silo:** instalação militar de lançamento com dois foguetes em escala, passarelas, portas blindadas, painéis, quatro câmeras, oito patrulhas, cientistas e elevador final. Desbloqueada após concluir Bunker 1. Toda a geometria é procedural e criada com as primitivas 3D existentes.
+
+- **AGENT:** instalar explosivos nas duas salas de combustível e chegar ao elevador (3 objetivos / 7 min).
+- **SECRET AGENT:** explosivos, fotografia de satélite, telemetria e evacuação (5 objetivos / 6 min).
+- **00 AGENT:** explosivos, foto, telemetria, circuitos, proteção de cientistas e evacuação (7 objetivos / 5 min).
+- O **cronômetro só começa quando o jogador interage com o terminal inicial**, não durante a carga ou cutscene. Ao pausar, o tempo congela; ao zerar, a missão falha. O elevador só permite sair depois de cumprir os objetivos.
+- Alarme e iluminação vermelha progressiva, checagem do enquadramento da foto com mira e linha de visão. O próximo cenário do GDD é **Frigate**, ainda não implementado.
+
+**Agachar e levantar (todas as fases):** use **Ctrl ou C no teclado**, **B/Círculo no controle** ou botão **AGACHAR/LEVANTAR** em dispositivo com toque. A câmera e a arma baixam, a velocidade cai, a colisão usa altura menor e **o personagem não consegue levantar se houver teto baixo**. O HUD informa EM PÉ / AGACHADO e o botão reflete o estado.
+
+**Validação:** verificação estática automatizada em `node tests/check.cjs` e 17 testes simulados adicionais de colisões, navegação, ativação e pausa do temporizador. Ainda não representam testes visuais completos em diferentes dispositivos WebGL.
 
 ## Missão 05 — Bunker 1 (v1.5)
 
@@ -61,7 +75,7 @@ Novo setor jogável de Severnaya baseado no GDD: cenário nevado amplo com trilh
 
 ## Controles
 
-Teclado/mouse: WASD mover, mouse mirar, clique esquerdo atirar, direito zoom, E interagir, R recarregar, Ctrl agachar, G plantar mina, F detonar, 1–3 trocar arma, Esc/Tab pausar, H mostrar/ocultar guia de objetivos.
+Teclado/mouse: WASD mover, mouse mirar, clique esquerdo atirar, direito zoom, E interagir, R recarregar, Ctrl ou C agachar/levantar, G plantar mina, F detonar, 1–3 trocar arma, Esc/Tab pausar, H mostrar/ocultar guia de objetivos.
 
 Gamepad padrão: analógicos para mover/mirar, RT/R2 disparar, LT/L2 zoom, X/Quadrado interagir, Y/Triângulo recarregar, B/Círculo agachar, LB/L1 plantar, RB/R1 detonar, Menu/Options pausa.
 
