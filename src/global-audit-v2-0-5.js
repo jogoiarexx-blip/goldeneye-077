@@ -81,7 +81,7 @@
     for(const npc of npcs){
       if(!npc.dead||npc.corpseRemoved||!npc.mesh)continue;
       npc.corpseAge=(npc.corpseAge??0)+step;
-      if(npc.corpseAge>=BODY_SECONDS){
+      if(npc.corpseAge>=BODY_SECONDS-1e-6){
         npc.corpseRemoved=true;
         npc.mesh.visible=false;
         if(npc.mesh.parent)npc.mesh.parent.remove(npc.mesh);
