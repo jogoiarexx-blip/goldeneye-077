@@ -32,7 +32,18 @@
   function chooseCover(guard, player, colliders) {
     const playerEye = new THREE.Vector3(player.x, 1.55, player.z);
     let best = null, bestScore = Infinity;
+    // Cobertura sob demanda: pesquisar apenas os 14 obstáculos próximos.
+    // Evita O(N^2) sobre todos os colliders dos mapas extensos.
+    const nearby = [];
     for (const b of colliders) {
+      if (b.minX >= b.maxX || (b.maxY ?? 5) < 1.5 || (b.minY ?? 0) > 1.2) continue;
+      const dx = Math.max(0, b.minX - guard.pos.x, guard.pos.x - b.maxX);
+      const dz = Math.max(0, b.minZ - guard.pos.z, guard.pos.z - b.maxZ);
+      const distanceSq = dx * dx + dz * dz;
+      if (distanceSq <= 100) nearby.push({ b, distanceSq });
+    }
+    nearby.sort((a, b) => a.distanceSq - b.distanceSq);
+    for (const { b } of nearby.slice(0, 14)) {
       if (b.minX >= b.maxX || (b.maxY ?? 5) < 1.5 || (b.minY ?? 0) > 1.2) continue;
       const midX = (b.minX + b.maxX) * 0.5;
       const midZ = (b.minZ + b.maxZ) * 0.5;

@@ -58,6 +58,7 @@
         this.searchTimer = 0;
         this.walkCycle = Math.random() * Math.PI * 2;
         this.hitFlashTimer = 0;
+        this.canSeePlayer = false; // visão confirmada (ângulo + parede), usada pelo rádio tático.
         // Vetores temporários reutilizados para evitar lixo GC na IA.
         this._toPlayer = new THREE.Vector3();
         this._moveDir = new THREE.Vector3();
@@ -268,6 +269,7 @@
           }
         }
 
+        this.canSeePlayer = canSeePlayer;
         if (canSeePlayer) {
           if (this.lastKnownPlayerPos) this.lastKnownPlayerPos.copy(playerPos);
           else this.lastKnownPlayerPos = playerPos.clone();
