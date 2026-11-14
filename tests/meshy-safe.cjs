@@ -5,7 +5,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),
 const root=path.resolve(__dirname,'..');
 const code=fs.readFileSync(path.join(root,'src/meshy-safe-v2-8.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-const meshy=fs.readFileSync(path.join(root,'src/meshy-guard-v2-9.js'),'utf8');
+const meshy=fs.readFileSync(path.join(root,'src/meshy-guard-v3-2.js'),'utf8');
 new vm.Script(code);
 assert.ok(!html.includes('src="src/meshy-rig-v2-7.js"'),
   'broken auto skinning must never be loaded');
