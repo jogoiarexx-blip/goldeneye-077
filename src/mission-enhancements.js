@@ -138,7 +138,11 @@
     runway_intel: 'Planos de voo', runway_plane: 'Avião de fuga',
     frigate_rescue_hostages: 'Libertar reféns', frigate_disarm_bridge: 'Desarmar bomba da ponte',
     frigate_disarm_engine: 'Desarmar bomba das máquinas',
-    frigate_heli_tracker: 'Instalar rastreador', frigate_exit: 'Evacuar navio'
+    frigate_heli_tracker: 'Instalar rastreador', frigate_exit: 'Evacuar navio',
+    s2_disable_surveillance: 'Desativar câmeras de vigilância',
+    s2_cut_bunker_link: 'Cortar enlace com o bunker',
+    s2_disable_helicopter: 'Neutralizar helicóptero de apoio',
+    s2_bunker_entry: 'Entrada subterrânea'
   };
   function guideTarget(gameInstance, id) {
     const level = gameInstance.levelBuilder;
