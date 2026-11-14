@@ -115,6 +115,7 @@ for(const token of [
 require('./dam-rework.cjs');
 require('./facility-audit.cjs');
 require('./global-audit.cjs');
+require('./campaign-audit.cjs');
 
 
 
