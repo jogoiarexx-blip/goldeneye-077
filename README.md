@@ -1,6 +1,6 @@
 # GoldenEye 007 Remastered — protótipo não oficial
 
-Protótipo de FPS de espionagem para navegador. Contém **sete missões**: Dam, Facility, Runway, Surface 1, Bunker 1, Silo e Frigate, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
+Protótipo de FPS de espionagem para navegador. Contém **oito missões**: Dam, Facility, Runway, Surface 1, Bunker 1, Silo, Frigate e Surface 2, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
 
 ## Jogar pelo GitHub Pages
 
@@ -11,6 +11,21 @@ O repositório está configurado para publicar automaticamente da branch `main`,
 Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy from a branch**, **Branch: main**, **Folder: /(root)**. Veja o status em **Actions → pages build and deployment**. A página `404.html` oferece uma rota de volta para o jogo quando um endereço interno antigo é acessado.
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
+
+## Missão 08 — Surface 2 (v1.8): Retorno a Severnaya
+
+**Mesmo campo nevado, nova contraoperação.** A missão preserva as quatro cabanas, a antena, a neve e a entrada por ventilação de Surface 1; o código chama o construtor do mapa da quarta missão em vez de manter outra cópia. Novos reforços: **12 soldados, 4 câmeras com visão obstruída pelos colliders, 2 holofotes, barricadas, posto de controle trancado, helicóptero de apoio** e nevasca de **440 partículas em um único objeto Points**. Atmosfera mais fria, com névoa controlada.
+
+**Objetivos por dificuldade:**
+- **AGENT (2):** neutralizar o helicóptero e entrar no bunker.
+- **SECRET AGENT (3):** interromper enlace, neutralizar o helicóptero e entrar no bunker.
+- **00 AGENT (4):** desativar vigilância, interromper enlace, neutralizar helicóptero e entrar no bunker.
+
+O controle CCTV está na cabana leste; o terminal de enlace fica no posto de rádio a oeste; a aeronave está no heliponto do setor norte e só pode ser acessada após abrir o checkpoint de segurança. A neutralização deixa **helicóptero inclinado, rotores parados e fumaça visível**, sem continuar operacional. **A saída somente conclui a missão quando as diretivas daquela dificuldade forem cumpridas**.
+
+A fase é liberada após concluir **Frigate**, com progresso salvo no `localStorage` quando disponível. A próxima fase do GDD é **Bunker 2**, ainda em desenvolvimento.
+
+Arquivos: `src/surface2-v1-8.js` e `tests/surface2.cjs`. O comando `node tests/check.cjs` valida sintaxe e simula a navegação pelo portão para evitar atalhos, os objetivos, o desbloqueio e a compatibilidade com Surface 1. Esses testes não substituem uma sessão completa no navegador com WebGL.
 
 ## Missão 07 — Frigate (v1.7)
 
