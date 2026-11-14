@@ -50,7 +50,12 @@
 
   function unlocked() {
     if (unlockedSession) return true;
-    try { return localStorage.getItem(SAVE) === '1'; } catch (_) { return false; }
+    try {
+      if (localStorage.getItem(SAVE) === '1') return true;
+      // Retrocompatibilidade: Frigate já concluída antes da v1.8.
+      return ['AGENT','SECRET_AGENT','00_AGENT'].some(diff =>
+        localStorage.getItem('ge007_frigate_best_'+diff) !== null);
+    } catch (_) { return false; }
   }
   function paint() {
     const button = document.querySelector('[data-mission="surface2"]');
