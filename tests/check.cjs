@@ -11,7 +11,7 @@ const scripts = [...html.matchAll(/<script\s+src="(src\/[^"]+\.js)"\s+defer><\/s
   .map(m => m[1]);
 const expected = [
   'src/audio.js', 'src/missions.js', 'src/world.js', 'src/guards.js',
-  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js', 'src/surface2-v1-8.js', 'src/bunker2-v1-9.js', 'src/statue-v2-0.js', 'src/dam-rework-v2-0-1.js'
+  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js', 'src/surface2-v1-8.js', 'src/bunker2-v1-9.js', 'src/statue-v2-0.js', 'src/dam-rework-v2-0-1.js', 'src/global-audit-v2-0-5.js'
 ];
 assert.deepEqual(scripts, expected, 'Os scripts precisam carregar na ordem correta.');
 for (const rel of scripts) {
@@ -114,6 +114,7 @@ for(const token of [
 ]) assert.ok(worldDam.includes(token),'Acesso de bungee defeituoso: '+token);
 require('./dam-rework.cjs');
 require('./facility-audit.cjs');
+require('./global-audit.cjs');
 
 
 
@@ -139,4 +140,4 @@ for (const required of [
 const visuals = fs.readFileSync(path.join(root, 'src/world.js'), 'utf8');
 assert.ok(visuals.includes("addSecurityGate('fac_gate_2'"), 'Porta do laboratório ausente.');
 assert.ok(visuals.includes("buildEscapePlane("), 'Avião de fuga ausente.');
-console.log('OK: dez missões, módulos, objetivos, Dam rework e auditoria Facility, IA, portas e cutscenes (checagens estáticas).');
+console.log('OK: dez missões, módulos, objetivos, Dam rework, auditoria Facility e global, IA, portas e cutscenes (checagens estáticas).');
