@@ -40,7 +40,7 @@ const FakeThree=Object.assign({},THREE,{GLTFLoader:class{
 const ctx=vm.createContext({THREE:FakeThree,GoldenEyeDamGame:Game,
  GuardAgent:Guard,window:{},console,Math,Set,Float32Array});
 const root=path.resolve(__dirname,'..');
-vm.runInContext(fs.readFileSync(path.join(root,'src/meshy-guard-v2-9.js'),'utf8'),ctx);
+vm.runInContext(fs.readFileSync(path.join(root,'src/meshy-guard-v3-2.js'),'utf8'),ctx);
 vm.runInContext(fs.readFileSync(path.join(root,'src/guard-motion-v3-2.js'),'utf8'),ctx);
 const game=new Game();game.startMission();
 assert.equal(loads,1,'One GLB request only');
