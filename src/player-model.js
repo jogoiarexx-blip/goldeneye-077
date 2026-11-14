@@ -25,16 +25,19 @@
     });
     const mixer=new THREE.AnimationMixer(model);
     const clips=gltf.animations || [];
-    const walking=clips.find(c=>/walking/i.test(c.name)) || clips[0];
-    const running=clips.find(c=>/running/i.test(c.name)) || walking;
+    const idle=clips.find(c=>/idle|standing|breathing/i.test(c.name));
+    const walking=clips.find(c=>/walk/i.test(c.name)) || clips[0];
+    const running=clips.find(c=>/run/i.test(c.name)) || walking;
+    const idleAction=idle?mixer.clipAction(idle):null;
     const walkAction=walking?mixer.clipAction(walking):null;
     const runAction=running?mixer.clipAction(running):walkAction;
-    // Rest on the first walking frame instead of showing the bind T-pose.
-    if(walkAction){walkAction.play();mixer.update(.001);walkAction.paused=true}
+    // A primeira pose válida evita que apareça a pose T antes do movimento.
+    const startAction=idleAction||walkAction;
+    if(startAction){startAction.play();mixer.update(.001);startAction.paused=!idleAction}
     this.renderer.localClippingEnabled=true;
     this.scene.add(root);
     this.playerAvatar={ready:true,root,model,mixer,clips,materials,clipPlane,
-      walkAction,runAction,action:walkAction,height:1.85,lastPos:this.player.pos.clone(),mode:null};
+      idleAction,walkAction,runAction,action:startAction,height:1.85,lastPos:this.player.pos.clone(),mode:null};
   };
   GAME.loadPlayerAvatar=function(){
     if(this.playerAvatarLoading||this.playerAvatar?.ready)return;
@@ -83,9 +86,18 @@
       a.root.scale.set(1,this.player.crouched?.64:1,1);
       // Clip only the upper body in FPS so the head cannot cover the camera.
       a.clipPlane.constant=this.camera.position.y-.38;
-      const action=speed>4.5?a.runAction:a.walkAction;
-      if(action&&action!==a.action){a.action?.stop();action.reset().play();a.action=action}
-      if(a.action){a.action.paused=speed<.08;a.action.timeScale=Math.max(.5,Math.min(1.6,speed/(speed>4.5?5:2.4)));a.mixer.update(Math.min(dt,.05))}
+      const action=speed<.08?(a.idleAction||a.walkAction):speed>3.6?a.runAction:a.walkAction;
+      if(action&&action!==a.action){
+        const previous=a.action;
+        action.reset().play();
+        if(previous&&previous!==action)action.crossFadeFrom(previous,.2,true);
+        a.action=action;
+      }
+      if(a.action){
+        a.action.paused=speed<.08&&!a.idleAction;
+        a.action.timeScale=speed<.08?1:Math.max(.5,Math.min(1.6,speed/(speed>3.6?4.3:2.4)));
+        a.mixer.update(Math.max(0,Math.min(dt,.05)));
+      }
     }
     a.lastPos.copy(this.player.pos);
     return result;

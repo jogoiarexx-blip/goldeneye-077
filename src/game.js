@@ -3,7 +3,8 @@
         this.canvas = document.getElementById('game-canvas');
         this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        this.renderPixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+        this.renderer.setPixelRatio(this.renderPixelRatio);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -81,6 +82,10 @@
         this.loadBestTime();
 
         this.lastFrameTime = performance.now();
+        this.lastFrameRendered = this.lastFrameTime;
+        this.renderSampleSeconds = 0;
+        this.renderFrameCount = 0;
+        this.weaponSwayPhase = 0;
         requestAnimationFrame((t) => this.loop(t));
       }
 
@@ -1204,6 +1209,18 @@
           this.player.pos.copy(nextPos);
         }
 
+        // Oscilação discreta da arma sincronizada com os passos; não altera mira nem física.
+        const stride = this.player.inTank ? 0 : Math.min(1, Math.hypot(moveForward, moveRight));
+        this.weaponSwayPhase += dt * (this.player.crouched ? 6.5 : 9.5) * stride;
+        this.weaponMeshGroup.position.x = THREE.MathUtils.lerp(
+          this.weaponMeshGroup.position.x,
+          0.24 + Math.sin(this.weaponSwayPhase) * stride * 0.012, Math.min(1, dt * 11)
+        );
+        this.weaponMeshGroup.rotation.z = THREE.MathUtils.lerp(
+          this.weaponMeshGroup.rotation.z,
+          Math.sin(this.weaponSwayPhase) * stride * 0.012, Math.min(1, dt * 11)
+        );
+
         if (!this.player.inTank) {
           this.player.pos.y = THREE.MathUtils.lerp(this.player.pos.y, this.player.crouched ? 1.13 : 1.65, Math.min(1, dt * 12));
         }
@@ -1351,13 +1368,55 @@
         }
       }
 
-      loop(now) {
-        const dt = Math.min(0.05, (now - this.lastFrameTime) / 1000);
-        this.lastFrameTime = now;
+      updateRenderBudget(rawDt) {
+        // Ajusta SOMENTE a resolução interna, mantendo texturas, modelos e sombras.
+        if (this.appState !== 'PLAYING' || !Number.isFinite(rawDt) || rawDt <= 0 || rawDt > 0.15) {
+          this.renderFrameCount = 0;
+          this.renderSampleSeconds = 0;
+          return;
+        }
+        this.renderFrameCount++;
+        this.renderSampleSeconds += rawDt;
+        if (this.renderSampleSeconds < 3) return;
+        const fps = this.renderFrameCount / this.renderSampleSeconds;
+        this.renderFrameCount = 0;
+        this.renderSampleSeconds = 0;
+        const maxRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+        const minRatio = Math.min(maxRatio, (navigator.maxTouchPoints || 0) > 0 ? 0.85 : 1);
+        const current = this.renderPixelRatio || maxRatio;
+        const desired = fps < 42 ? Math.max(minRatio, current - 0.1) :
+          fps > 57 ? Math.min(maxRatio, current + 0.05) : current;
+        if (Math.abs(desired - current) > 0.001) {
+          this.renderPixelRatio = desired;
+          this.renderer.setPixelRatio(desired);
+        }
+      }
 
+      loop(now) {
+        // Uma aba em segundo plano não deve avançar IA, tiros nem cutscenes.
+        if (document.hidden) {
+          if (this.appState === 'PLAYING') this.togglePauseQWatch();
+          this.lastFrameTime = now;
+          this.lastFrameRendered = now;
+          this.renderFrameCount = 0;
+          this.renderSampleSeconds = 0;
+          requestAnimationFrame((t) => this.loop(t));
+          return;
+        }
+        // Menus continuam animados a 30 FPS, economizando GPU.
+        if ((this.appState === 'MENU' || this.appState === 'RESULTS') &&
+            now - (this.lastFrameRendered || 0) < 1000 / 30) {
+          requestAnimationFrame((t) => this.loop(t));
+          return;
+        }
+        const rawDt = Math.max(0, (now - this.lastFrameTime) / 1000);
+        const dt = Math.min(0.05, rawDt);
+        this.lastFrameTime = now;
+        this.lastFrameRendered = now;
         this.pollGamepad(dt);
         this.update(dt);
         this.renderer.render(this.scene, this.camera);
+        this.updateRenderBudget(rawDt);
         requestAnimationFrame((t) => this.loop(t));
       }
 

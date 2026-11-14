@@ -152,3 +152,4 @@ require('./combat-feedback.cjs');
 require('./menu-ui.cjs');
 require('./mobile-controls.cjs');
 require('./runway-aircraft.cjs');
+require('./quality-performance.cjs');

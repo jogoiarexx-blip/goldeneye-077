@@ -1,16 +1,38 @@
+    // Interseção segmento/AABB sem criar Ray, Box3 ou Vector3 por obstáculo.
+    // Preserva a regra de ignorar os últimos 12 cm do segmento (alvo na parede).
     function hasLineOfSight(origin, target, colliders, ignoreCollider = null) {
-      const direction = target.clone().sub(origin);
-      const length = direction.length();
-      if (length < 0.001) return true;
-      const ray = new THREE.Ray(origin.clone(), direction.divideScalar(length));
-      const hit = new THREE.Vector3();
+      const dx = target.x - origin.x, dy = target.y - origin.y, dz = target.z - origin.z;
+      const distance = Math.hypot(dx, dy, dz);
+      if (distance < 0.001) return true;
+      const hitLimit = 1 - 0.12 / distance;
       for (const box of colliders) {
-        if (box === ignoreCollider || box.minX > box.maxX) continue;
-        const bounds = new THREE.Box3(
-          new THREE.Vector3(box.minX, box.minY ?? 0, box.minZ),
-          new THREE.Vector3(box.maxX, box.maxY ?? 5, box.maxZ)
-        );
-        if (ray.intersectBox(bounds, hit) && origin.distanceTo(hit) < length - 0.12) return false;
+        if (box === ignoreCollider || box.minX > box.maxX || box.minZ > box.maxZ) continue;
+        const minY = box.minY ?? 0, maxY = box.maxY ?? 5;
+        if (minY > maxY) continue;
+        let near = -Infinity, far = Infinity, a, b;
+        if (Math.abs(dx) < 1e-12) {
+          if (origin.x < box.minX || origin.x > box.maxX) continue;
+        } else {
+          a = (box.minX - origin.x) / dx; b = (box.maxX - origin.x) / dx;
+          near = Math.max(near, Math.min(a, b)); far = Math.min(far, Math.max(a, b));
+          if (near > far) continue;
+        }
+        if (Math.abs(dy) < 1e-12) {
+          if (origin.y < minY || origin.y > maxY) continue;
+        } else {
+          a = (minY - origin.y) / dy; b = (maxY - origin.y) / dy;
+          near = Math.max(near, Math.min(a, b)); far = Math.min(far, Math.max(a, b));
+          if (near > far) continue;
+        }
+        if (Math.abs(dz) < 1e-12) {
+          if (origin.z < box.minZ || origin.z > box.maxZ) continue;
+        } else {
+          a = (box.minZ - origin.z) / dz; b = (box.maxZ - origin.z) / dz;
+          near = Math.max(near, Math.min(a, b)); far = Math.min(far, Math.max(a, b));
+          if (near > far) continue;
+        }
+        const hit = near >= 0 ? near : far;
+        if (hit >= 0 && hit < hitLimit) return false;
       }
       return true;
     }
@@ -36,6 +58,13 @@
         this.searchTimer = 0;
         this.walkCycle = Math.random() * Math.PI * 2;
         this.hitFlashTimer = 0;
+        // Vetores temporários reutilizados para evitar lixo GC na IA.
+        this._toPlayer = new THREE.Vector3();
+        this._moveDir = new THREE.Vector3();
+        this._visionOrigin = new THREE.Vector3();
+        this.visualYaw = 0;
+        this.walkBlend = 0;
+        this.idlePhase = Math.random() * Math.PI * 2;
 
         this.mesh = this.buildCharacterMesh();
         this.mesh.position.copy(this.pos);
@@ -223,24 +252,25 @@
           this.bodyMaterials.forEach(m => m.emissive.setHex(this.hitFlashTimer > 0 ? 0x661111 : 0x000000));
         }
 
-        const toPlayer = new THREE.Vector3().subVectors(playerPos, this.pos);
+        const toPlayer = this._toPlayer.subVectors(playerPos, this.pos);
         toPlayer.y = 0;
         const distToPlayer = toPlayer.length();
 
         // Verifica visão (cone de 100 graus + linha de visão livre)
         let canSeePlayer = false;
         if (distToPlayer < 34) {
-          const forward = new THREE.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
-          const angle = forward.angleTo(toPlayer.clone().normalize());
-          if (angle < THREE.MathUtils.degToRad(52) || distToPlayer < 4.0) {
-            if (hasLineOfSight(new THREE.Vector3(this.pos.x, 1.45, this.pos.z), playerPos, colliders)) {
+          const facing = distToPlayer > 0
+            ? (Math.sin(this.yaw) * toPlayer.x + Math.cos(this.yaw) * toPlayer.z) / distToPlayer : 1;
+          if (facing > 0.6156614753 || distToPlayer < 4.0) {
+            if (hasLineOfSight(this._visionOrigin.set(this.pos.x, 1.45, this.pos.z), playerPos, colliders)) {
               canSeePlayer = true;
             }
           }
         }
 
         if (canSeePlayer) {
-          this.lastKnownPlayerPos = playerPos.clone();
+          if (this.lastKnownPlayerPos) this.lastKnownPlayerPos.copy(playerPos);
+          else this.lastKnownPlayerPos = playerPos.clone();
           if (this.state !== 'ALERTED') {
             this.suspicion += dt / this.reactionDelay;
             this.statusOrb.material.color.setHex(0xf59e0b);
@@ -263,7 +293,7 @@
         let isMoving = false;
         if (this.state === 'PATROL') {
           const target = this.patrolPoints[this.patrolIdx];
-          const dir = new THREE.Vector3().subVectors(target, this.pos);
+          const dir = this._moveDir.subVectors(target, this.pos);
           dir.y = 0;
           if (dir.length() < 0.4) {
             this.patrolIdx = (this.patrolIdx + 1) % this.patrolPoints.length;
@@ -274,7 +304,7 @@
             isMoving = true;
           }
         } else if (this.state === 'SUSPICIOUS' && this.lastKnownPlayerPos) {
-          const dir = new THREE.Vector3().subVectors(this.lastKnownPlayerPos, this.pos);
+          const dir = this._moveDir.subVectors(this.lastKnownPlayerPos, this.pos);
           dir.y = 0;
           if (dir.length() > 1.2) {
             dir.normalize();
@@ -292,7 +322,7 @@
         } else if (this.state === 'ALERTED') {
           this.searchTimer = canSeePlayer ? 0 : this.searchTimer + dt;
           if (this.lastKnownPlayerPos) {
-            const lookDir = new THREE.Vector3().subVectors(this.lastKnownPlayerPos, this.pos);
+            const lookDir = this._moveDir.subVectors(this.lastKnownPlayerPos, this.pos);
             lookDir.y = 0;
             if (lookDir.length() > 0.01) {
               this.yaw = Math.atan2(lookDir.x, lookDir.z);
@@ -317,22 +347,28 @@
           }
         }
 
-        // Animação articulada de marcha e postura de combate
-        if (isMoving) {
-          this.walkCycle += dt * (this.state === 'ALERTED' ? 11 : 6.5);
-          const swing = Math.sin(this.walkCycle) * 0.55;
-          this.leftLeg.rotation.x = swing;
-          this.rightLeg.rotation.x = -swing;
-          this.torsoGroup.position.y = 1.24 + Math.abs(Math.cos(this.walkCycle)) * 0.035;
-        } else {
-          this.leftLeg.rotation.x *= 0.8;
-          this.rightLeg.rotation.x *= 0.8;
-          this.torsoGroup.position.y = 1.24;
-        }
-
-        this.weaponArmGroup.rotation.x = this.state === 'ALERTED' ? -0.18 : 0.12;
+        // Marcha e transições de combate com blend dependente do tempo real.
+        // A IA usa yaw instantâneo; somente a rotação visual é suavizada.
+        const smooth = (rate) => 1 - Math.exp(-rate * Math.max(0, dt));
+        this.walkBlend += ((isMoving ? 1 : 0) - this.walkBlend) * smooth(isMoving ? 11 : 8);
+        this.walkCycle += dt * (this.state === 'ALERTED' ? 10.5 : 7) *
+          Math.max(0.2, this.walkBlend);
+        this.idlePhase += dt * 1.8;
+        const swing = Math.sin(this.walkCycle) * 0.55 * this.walkBlend;
+        const limbBlend = smooth(14);
+        this.leftLeg.rotation.x = THREE.MathUtils.lerp(this.leftLeg.rotation.x, swing, limbBlend);
+        this.rightLeg.rotation.x = THREE.MathUtils.lerp(this.rightLeg.rotation.x, -swing, limbBlend);
+        this.torsoGroup.position.y = 1.24 +
+          Math.abs(Math.cos(this.walkCycle)) * 0.035 * this.walkBlend +
+          Math.sin(this.idlePhase) * 0.004 * (1 - this.walkBlend);
+        this.weaponArmGroup.rotation.x = THREE.MathUtils.lerp(
+          this.weaponArmGroup.rotation.x, this.state === 'ALERTED' ? -0.18 : 0.12, smooth(9)
+        );
+        const deltaYaw = Math.atan2(Math.sin(this.yaw - this.visualYaw),
+                                    Math.cos(this.yaw - this.visualYaw));
+        this.visualYaw += deltaYaw * smooth(this.state === 'ALERTED' ? 14 : 10);
         this.mesh.position.copy(this.pos);
-        this.mesh.rotation.y = this.yaw;
+        this.mesh.rotation.y = this.visualYaw;
       }
     }
 
