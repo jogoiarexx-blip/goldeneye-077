@@ -59,5 +59,5 @@ assert.ok(Math.abs(rig.parts.head.rotation.x+.21)<.01,'Death completed');
 const final=rig.parts.larm.rotation.z;guard.update(.05);
 assert.equal(rig.parts.larm.rotation.z,final);
 const noMesh=new Guard(new THREE.Group());
-noMesh.update(.05);assert.equal(noMesh.meshyBoneRig,undefined);
+noMesh.update(.05);assert.equal(noMesh.meshyBoneRig,null);
 console.log('OK rig Meshy: 17 bones, weights, texture UVs, walk, aim, fire, death, fallback.');
