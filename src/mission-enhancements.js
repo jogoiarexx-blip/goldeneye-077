@@ -135,7 +135,10 @@
     contact_doak: 'Localizar Dr. Doak', meet_006: 'Encontrar agente 006',
     destroy_tanks: 'Destruir tanques químicos', facility_exit: 'Saída da instalação',
     ignition_key: 'Encontrar chave de ignição', destroy_emplacements: 'Destruir defesas',
-    runway_intel: 'Planos de voo', runway_plane: 'Avião de fuga'
+    runway_intel: 'Planos de voo', runway_plane: 'Avião de fuga',
+    frigate_rescue_hostages: 'Libertar reféns', frigate_disarm_bridge: 'Desarmar bomba da ponte',
+    frigate_disarm_engine: 'Desarmar bomba das máquinas',
+    frigate_heli_tracker: 'Instalar rastreador', frigate_exit: 'Evacuar navio'
   };
   function guideTarget(gameInstance, id) {
     const level = gameInstance.levelBuilder;
@@ -143,6 +146,7 @@
     if (id === 'disable_alarms') entries = level.alarms.filter(x => !x.destroyed);
     else if (id === 'destroy_tanks') entries = level.tanks.filter(x => !x.destroyed);
     else if (id === 'destroy_emplacements') entries = level.emplacements.filter(x => !x.destroyed);
+    else if (id === 'frigate_rescue_hostages') entries = level.interactables.filter(x => x.type === 'frigate_hostage' && !x.completed);
     else entries = level.interactables.filter(x => x.id === id && !x.completed);
     entries.sort((a, b) => gameInstance.player.pos.distanceTo(a.position) - gameInstance.player.pos.distanceTo(b.position));
     return entries[0]?.position || null;
