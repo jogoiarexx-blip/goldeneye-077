@@ -42,4 +42,4 @@ assert.ok(html.includes('src="src/meshy-guard-v2-9.js" defer'));
 assert.ok(html.indexOf('src/meshy-guard-v2-9.js') >
   html.indexOf('src/mobile-controls-v2-4.js'));
 console.log('OK Meshy: GLB válido, '+binary.length+' bytes, '+
-  positions.count+' vértices, um guarda especial por fase e fallback seguro.');
+  positions.count+' vértices, 3-4 guardas especiais por fase e fallback seguro.');
