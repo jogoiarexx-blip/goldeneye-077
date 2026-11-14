@@ -118,7 +118,7 @@ class FakeGame{
 }
 class FakeGuard{}
 const ctx=vm.createContext({
- THREE,document:doc,window:{addEventListener(){}},
+ THREE,document:doc,window:{THREE,addEventListener(){}},
  localStorage:storage,GoldenEyeDamGame:FakeGame,GuardAgent:FakeGuard,
  performance:{now(){return 0}},console,
  hasLineOfSight(){return true}
