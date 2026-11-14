@@ -1114,6 +1114,14 @@
               this.levelBuilder.planeMesh.position.z = -114 - p * 45;
               this.levelBuilder.planeMesh.position.y = Math.max(0, (p - 0.35) * 18);
               this.levelBuilder.planeMesh.rotation.x = Math.max(0, (p - 0.35) * 0.25);
+              const landingGear = this.levelBuilder.planeMesh.userData.landingGear;
+              if (landingGear) {
+                const retract = Math.max(0.01, 1 - Math.max(0, p - 0.36) / 0.3);
+                for (const leg of landingGear) {
+                  leg.scale.y = retract;
+                  leg.visible = p < 0.67;
+                }
+              }
             }
             this.camera.position.set(14, 5.5 + p * 6, -108 - p * 22);
             this.camera.lookAt(0, 2 + Math.max(0, (p - 0.35) * 16), -114 - p * 45);

@@ -638,44 +638,165 @@
       }
 
       buildEscapePlane(x, z) {
+        // Avião Runway v2.2: bimotor de fuga procedural, baixo custo de GPU.
         const plane = new THREE.Group();
+        plane.name = 'runway_aircraft_v2_2';
         plane.position.set(x, 0, z);
+        const hullMat = new THREE.MeshStandardMaterial({ color: 0xcbd5de, roughness: 0.55, metalness: 0.28 });
+        const wingMat = new THREE.MeshStandardMaterial({ color: 0xaebfc9, roughness: 0.62, metalness: 0.2, side: THREE.DoubleSide });
+        const trimMat = new THREE.MeshStandardMaterial({ color: 0x155e75, roughness: 0.51, metalness: 0.22 });
+        const glassMat = new THREE.MeshStandardMaterial({ color: 0x15394d, roughness: 0.15, metalness: 0.42 });
+        const engineMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.5, metalness: 0.48 });
+        const metalMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.46, metalness: 0.65 });
+        const tireMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.95 });
+        const propMat = new THREE.MeshStandardMaterial({ color: 0x253341, roughness: 0.62, metalness: 0.2 });
+        const accentMat = new THREE.MeshStandardMaterial({ color: 0xb45339, roughness: 0.7, side: THREE.DoubleSide });
+        const mesh = (name, geometry, material, x0, y0, z0, shadow = false) => {
+          const m = new THREE.Mesh(geometry, material);
+          m.name = name;
+          m.position.set(x0, y0, z0);
+          m.castShadow = shadow;
+          plane.add(m);
+          return m;
+        };
+        // Quatro cantos e espessura: 12 triângulos por painel (sem texturas).
+        const panel = (name, corners, offset, material) => {
+          const back = corners.map(v => [v[0] + offset[0], v[1] + offset[1], v[2] + offset[2]]);
+          const vertices = [];
+          const tri = (a, b, c) => vertices.push(...a, ...b, ...c);
+          tri(corners[0], corners[1], corners[2]);
+          tri(corners[0], corners[2], corners[3]);
+          tri(back[2], back[1], back[0]);
+          tri(back[3], back[2], back[0]);
+          for (let i = 0; i < 4; i++) {
+            const j = (i + 1) % 4;
+            tri(corners[i], back[i], back[j]);
+            tri(corners[i], back[j], corners[j]);
+          }
+          const geo = new THREE.BufferGeometry();
+          geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+          geo.computeVertexNormals();
+          return mesh(name, geo, material, 0, 0, 0, true);
+        };
 
-        const matHull = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.4, metalness: 0.35 });
-        const matTrim = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.45 });
-        const matDark = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
-
-        const fuselage = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 0.85, 11.5, 16), matHull);
+        // Corpo com nariz arredondado e cauda afunilada, orientado a -Z.
+        const fuselage = mesh('fuselagem', new THREE.CylinderGeometry(0.83, 1, 9.0, 12),
+          hullMat, 0, 2.38, 0.0, true);
         fuselage.rotation.x = Math.PI / 2;
-        fuselage.position.y = 1.85;
-        fuselage.castShadow = true;
+        const nose = mesh('nariz', new THREE.SphereGeometry(1, 12, 8), hullMat, 0, 2.38, -4.35, true);
+        nose.scale.set(0.92, 0.83, 1.43);
+        const tail = mesh('corpo_traseiro', new THREE.CylinderGeometry(0.22, 0.8, 3.0, 12),
+          hullMat, 0, 2.38, 4.72, true);
+        tail.rotation.x = Math.PI / 2;
+        for (const side of [-1, 1]) {
+          mesh('faixa_identificacao', new THREE.BoxGeometry(0.035, 0.15, 6.6),
+            trimMat, side * 0.98, 2.44, 0);
+        }
 
-        const nose = new THREE.Mesh(new THREE.ConeGeometry(1.15, 2.4, 16), matTrim);
-        nose.rotation.x = -Math.PI / 2;
-        nose.position.set(0, 1.85, -6.9);
+        const cockpit = mesh('cockpit', new THREE.SphereGeometry(1, 12, 8),
+          glassMat, 0, 3.04, -3.48, true);
+        cockpit.scale.set(0.75, 0.46, 1.3);
+        mesh('moldura_parabrisa', new THREE.BoxGeometry(0.065, 0.48, 0.12),
+          metalMat, 0, 3.19, -4.41);
+        for (const side of [-1, 1]) {
+          for (let i = 0; i < 4; i++) {
+            mesh('janela_lateral', new THREE.BoxGeometry(0.045, 0.31, 0.42),
+              glassMat, side * 0.97, 2.62, -1.18 + i * 1.05);
+          }
+          panel(side < 0 ? 'asa_esquerda' : 'asa_direita', [
+            [side * 0.65, 3.20, -1.95], [side * 8.6, 3.62, -0.65],
+            [side * 8.28, 3.62, 1.08], [side * 0.65, 3.20, 1.48]
+          ], [0, -0.18, 0], wingMat);
+          const flap = mesh('flap', new THREE.BoxGeometry(3.5, 0.07, 0.38),
+            engineMat, side * 5.28, 3.45, 1.01);
+          flap.rotation.y = -side * 0.06;
+          const roundel = mesh('marca_asa', new THREE.CircleGeometry(0.46, 12),
+            accentMat, side * 6.1, 3.54, 0.17);
+          roundel.rotation.x = -Math.PI / 2;
+          panel('estabilizador_horizontal', [
+            [side * 0.15, 2.77, 4.50], [side * 3.3, 2.96, 5.10],
+            [side * 3.04, 2.96, 6.05], [side * 0.15, 2.77, 6.05]
+          ], [0, -0.12, 0], wingMat);
+        }
+        panel('leme_vertical', [
+          [-0.1, 3.00, 3.89], [-0.1, 5.55, 5.13],
+          [-0.1, 5.33, 6.27], [-0.1, 3.0, 6.04]
+        ], [0.2, 0, 0], trimMat);
 
-        const wings = new THREE.Mesh(new THREE.BoxGeometry(15.5, 0.18, 2.4), matHull);
-        wings.position.set(0, 2.05, -1.2);
-        wings.castShadow = true;
+        // Hélices com três pás rotacionando apenas em torno do eixo longitudinal.
+        for (const side of [-1, 1]) {
+          const ex = side * 3.5;
+          const nacelle = mesh('nacele_motor', new THREE.CylinderGeometry(0.52, 0.58, 2.1, 12),
+            engineMat, ex, 3.19, -1.07, true);
+          nacelle.rotation.x = Math.PI / 2;
+          const cowling = mesh('nariz_motor', new THREE.ConeGeometry(0.52, 0.72, 12),
+            metalMat, ex, 3.19, -2.25);
+          cowling.rotation.x = -Math.PI / 2;
+          const prop = new THREE.Group();
+          prop.name = side < 0 ? 'helice_esquerda' : 'helice_direita';
+          prop.position.set(ex, 3.19, -2.75);
+          for (let b = 0; b < 3; b++) {
+            const arm = new THREE.Group();
+            arm.rotation.z = b * Math.PI * 2 / 3;
+            const blade = new THREE.Mesh(new THREE.BoxGeometry(0.22, 1.2, 0.07), propMat);
+            blade.position.y = 0.61;
+            blade.rotation.y = 0.12;
+            arm.add(blade);
+            prop.add(arm);
+          }
+          const hub = new THREE.Mesh(new THREE.SphereGeometry(0.19, 8, 6), metalMat);
+          prop.add(hub);
+          plane.add(prop);
+          this.animatedProps.push({ type: 'aircraft-propeller', mesh: prop });
+        }
 
-        const tailFin = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.4, 1.8), matTrim);
-        tailFin.position.set(0, 3.2, 4.6);
+        // Trens de pouso com três rodas e braços retráteis na cutscene.
+        const tireGeometry = new THREE.CylinderGeometry(0.34, 0.34, 0.27, 12);
+        tireGeometry.rotateZ(Math.PI / 2);
+        const gearList = [];
+        for (const [name, gx, gz, top] of [
+          ['trem_esquerdo', -3.38, 0.35, 2.98],
+          ['trem_direito', 3.38, 0.35, 2.98],
+          ['trem_nariz', 0, -4.0, 1.92]
+        ]) {
+          const group = new THREE.Group();
+          group.name = name;
+          group.position.set(gx, top, gz);
+          const len = top - 0.43;
+          const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, len, 7), metalMat);
+          strut.position.y = -len / 2;
+          group.add(strut);
+          const wheel = new THREE.Mesh(tireGeometry, tireMat);
+          wheel.position.y = 0.36 - top;
+          group.add(wheel);
+          plane.add(group);
+          gearList.push(group);
+        }
+        plane.userData.landingGear = gearList;
 
-        const tailPlane = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.14, 1.1), matHull);
-        tailPlane.position.set(0, 2.2, 4.8);
+        // Porta e escada lateral alinhadas com a área existente de interação.
+        mesh('porta_embarque', new THREE.BoxGeometry(0.05, 1.15, 0.88),
+          engineMat, -0.99, 2.32, 2.1);
+        mesh('puxador', new THREE.BoxGeometry(0.09, 0.08, 0.17),
+          metalMat, -1.04, 2.29, 2.32);
+        for (let i = 0; i < 4; i++) {
+          mesh('degrau', new THREE.BoxGeometry(0.58, 0.09, 0.71),
+            engineMat, -2.62 + i * 0.37, 0.39 + i * 0.34, 2.1);
+        }
 
-        // Hélices e trem de pouso
-        [-3.4, 3.4].forEach(ex => {
-          const engine = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 1.5, 12), matDark);
-          engine.rotation.x = Math.PI / 2;
-          engine.position.set(ex, 2.0, -2.2);
-          const prop = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.12, 0.06), matDark);
-          prop.position.set(ex, 2.0, -3.0);
-          plane.add(engine, prop);
-          this.animatedProps.push({ type: 'propeller', mesh: prop });
-        });
-
-        plane.add(fuselage, nose, wings, tailFin, tailPlane);
+        // Luzes emissivas piscantes, sem adicionar luz dinâmica nem sombras.
+        for (const [name, lx, ly, lz, color, phase] of [
+          ['luz_vermelha', -8.6, 3.66, 0.0, 0xef4444, 0],
+          ['luz_verde', 8.6, 3.66, 0.0, 0x22c55e, Math.PI],
+          ['luz_cauda', 0, 5.57, 5.18, 0xf8fafc, 1.1]
+        ]) {
+          const lightMat = new THREE.MeshStandardMaterial({
+            color, emissive: color, emissiveIntensity: 1.25
+          });
+          const bulb = mesh(name, new THREE.SphereGeometry(0.13, 8, 6),
+            lightMat, lx, ly, lz);
+          this.animatedProps.push({ type: 'aircraft-light', mesh: bulb, phase });
+        }
         this.levelGroup.add(plane);
         this.planeMesh = plane;
       }
@@ -1694,6 +1815,11 @@
             prop.tex.offset.x = Math.sin(nowSec * 0.4) * 0.03;
           } else if (prop.type === 'beacon' && prop.mesh) {
             prop.mesh.material.opacity = 0.45 + Math.sin(nowSec * 4.5) * 0.3;
+          } else if (prop.type === 'aircraft-propeller' && prop.mesh) {
+            prop.mesh.rotation.z += dt * 26;
+          } else if (prop.type === 'aircraft-light' && prop.mesh) {
+            prop.mesh.material.emissiveIntensity =
+              0.65 + (0.5 + Math.sin(nowSec * 5 + prop.phase) * 0.5) * 1.2;
           } else if (prop.type === 'propeller' && prop.mesh) {
             prop.mesh.rotation.y += dt * 3.2;
             prop.mesh.rotation.z += dt * 18;
