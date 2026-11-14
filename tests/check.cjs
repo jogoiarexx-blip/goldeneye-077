@@ -11,7 +11,7 @@ const scripts = [...html.matchAll(/<script\s+src="(src\/[^"]+\.js)"\s+defer><\/s
   .map(m => m[1]);
 const expected = [
   'src/audio.js', 'src/missions.js', 'src/world.js', 'src/guards.js',
-  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js', 'src/surface2-v1-8.js', 'src/bunker2-v1-9.js'
+  'src/game.js', 'src/mission-enhancements.js', 'src/tactics-v1-3.js', 'src/surface-v1-4.js', 'src/bunker-v1-5.js', 'src/silo-v1-6.js', 'src/frigate-v1-7.js', 'src/surface2-v1-8.js', 'src/bunker2-v1-9.js', 'src/statue-v2-0.js'
 ];
 assert.deepEqual(scripts, expected, 'Os scripts precisam carregar na ordem correta.');
 for (const rel of scripts) {
@@ -88,6 +88,18 @@ for(const token of [
 assert.ok(html.includes('data-mission="bunker2"'),'Bunker 2 não aparece no dossiê');
 assert.ok(html.includes('id="bunker2-ally-status"'),'HUD de Natalya ausente');
 require('./bunker2.cjs');
+const statue=fs.readFileSync(path.join(root,'src/statue-v2-0.js'),'utf8');
+for(const token of [
+  "const ID='statue'", 'WORLD.buildStatueLevel',
+  "'st_valentin'", "'st_janus'", "'st_helicopter'",
+  "'st_natalya'", "'st_flight_recorder'", "'st_exit'",
+  'st.recorderRevealed=true', 'st.janus.mesh.visible=true',
+  "finished==='bunker2'", 'STATUE_SCENE', 'cue(game,position)'
+]) assert.ok(statue.includes(token),'Statue v2.0 incompleta: '+token);
+assert.ok(html.includes('data-mission="statue"'),'Statue não aparece no menu');
+assert.ok(html.includes('id="statue-cinematic"'),'HUD das cenas de Statue ausente');
+require('./statue.cjs');
+
 
 
 const guideSource = fs.readFileSync(path.join(root, 'src/mission-enhancements.js'), 'utf8');
@@ -111,4 +123,4 @@ for (const required of [
 const visuals = fs.readFileSync(path.join(root, 'src/world.js'), 'utf8');
 assert.ok(visuals.includes("addSecurityGate('fac_gate_2'"), 'Porta do laboratório ausente.');
 assert.ok(visuals.includes("buildEscapePlane("), 'Avião de fuga ausente.');
-console.log('OK: nove missões, módulos, objetivos, IA, portas e cutscenes (checagens estáticas).');
+console.log('OK: dez missões, módulos, objetivos, IA, portas e cutscenes (checagens estáticas).');
