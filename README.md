@@ -1,6 +1,6 @@
 # GoldenEye 007 Remastered — protótipo não oficial
 
-Protótipo de FPS de espionagem para navegador. Contém **oito missões**: Dam, Facility, Runway, Surface 1, Bunker 1, Silo, Frigate e Surface 2, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
+Protótipo de FPS de espionagem para navegador. Contém **nove missões**: Dam, Facility, Runway, Surface 1, Bunker 1, Silo, Frigate, Surface 2 e Bunker 2, com desbloqueio sequencial das missões novas. O GDD completo de 20 fases está em `docs/` como referência; as demais missões ainda não foram implementadas.
 
 ## Jogar pelo GitHub Pages
 
@@ -11,6 +11,21 @@ O repositório está configurado para publicar automaticamente da branch `main`,
 Se houver erro 404, consulte **Settings → Pages** e confirme **Source: Deploy from a branch**, **Branch: main**, **Folder: /(root)**. Veja o status em **Actions → pages build and deployment**. A página `404.html` oferece uma rota de volta para o jogo quando um endereço interno antigo é acessado.
 
 O jogo usa arquivos estáticos e depende da conexão à internet para Three.js, Tailwind e fontes externas.
+
+## Missão 09 — Bunker 2 (v1.9): Fuga com Natalya
+
+**Severnaya — complexo subterrâneo de detenção.** Nova missão baseada na seção 7.09 do GDD, com celas, arquivos, monitores, 3 portões, 4 câmeras destruíveis, 8 patrulhas iniciais e, no máximo, 2 reforços após alerta. Cenário gerado com geometria procedural leve, mantendo compatibilidade com GitHub Pages. Bunker 2 é desbloqueado após concluir Surface 2 e também reconhece recordes anteriores.
+
+**Dificuldades:**
+- **AGENT (2 diretivas):** recuperar fita de vídeo e escapar com Natalya viva.
+- **SECRET AGENT (3 diretivas):** comparar registros, recuperar fita e escapar com Natalya viva.
+- **00 AGENT (5 diretivas):** comparar registros de funcionários e baixas; recuperar fita; destruir as 4 câmeras (por tiro ou sabotagem próxima); obter manual GoldenEye; escapar com Natalya.
+
+**Como jogar:** use **E** para abrir portões e libertar Natalya. Ao se aproximar dela novamente, **E** alterna **SEGUIR / AGUARDAR**. Ela percorre o corredor com pontos de passagem, aguarda em portas fechadas, não atravessa paredes e pode se abaixar sob ameaça. O painel no HUD exibe postura, saúde e distância da aliada. Natalya pode sofrer dano dos guardas e um disparo direto contra ela faz a missão fracassar. A saída final só libera após os objetivos concluídos **e Natalya dentro do raio de evacuação**. Dois registros devem ser lidos antes da comparação; a fita e o manual são itens independentes. O guia contextual aponta registros e câmeras restantes.
+
+**Testes:** `node tests/check.cjs` inclui `tests/bunker2.cjs`, que simula portões, alcance de objetivos, arquivo, câmeras, ordens de seguir/aguardar, escolta real até a saída, morte da aliada, reforços e desbloqueio antigo. Testes automáticos não substituem validar a experiência completa no navegador WebGL.
+
+**Próxima missão planejada:** Statue (ainda não implementada).
 
 ## Missão 08 — Surface 2 (v1.8): Retorno a Severnaya
 
