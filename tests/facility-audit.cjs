@@ -29,6 +29,7 @@ class Obj {
 }
 class Geometry {
  constructor(...dims){this.dims=dims}
+ rotateZ(){return this}
 }
 class Mesh extends Obj{
  constructor(geometry,material){super();this.geometry=geometry;this.material=material}
