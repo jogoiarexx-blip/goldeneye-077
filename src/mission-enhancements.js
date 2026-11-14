@@ -157,6 +157,22 @@
   };
   function guideTarget(gameInstance, id) {
     const level = gameInstance.levelBuilder;
+    // Facility: orientar até o controle correto antes de qualquer objetivo
+    // atrás de portões. A primeira alavanca fica antes do laboratório.
+    if(gameInstance.currentMissionId==='facility'){
+      for(const [gateId,readerId] of [
+        ['fac_gate_1','open_fac_gate_1'],
+        ['fac_gate_2','open_fac_gate_2']
+      ]){
+        const gate=level.gates.find(g=>g.id===gateId);
+        const needsAccess=gateId==='fac_gate_1' ||
+          ['meet_006','destroy_tanks','facility_exit'].includes(id);
+        if(gate&&!gate.isOpen&&needsAccess){
+          const reader=level.interactables.find(i=>i.id===readerId&&!i.completed);
+          if(reader)return reader.position;
+        }
+      }
+    }
     // Runway: nunca enviar o jogador pela lateral quando o checkpoint
     // principal estiver fechado; apontar para o leitor do lado de entrada.
     const runwayGate = gameInstance.currentMissionId === 'runway'
@@ -222,11 +238,19 @@
       gameInstance.levelBuilder.gates.some(g => g.id === 's2_gate' && !g.isOpen);
     const runwayGatePending=gameInstance.currentMissionId==='runway' &&
       gameInstance.levelBuilder.gates.some(g => g.id === 'run_gate_1' && !g.isOpen);
-    view.textContent = runwayGatePending
-      ? 'ACESSO: DESTRAVAR PORTÃO DA PISTA' + distance
-      : gatePending
-        ? 'ACESSO: ABRIR PORTÃO NORTE' + distance
-        : 'DIRETIVA: ' + (labels[objective.id] || objective.title) + distance;
+    const facilityGatePending=gameInstance.currentMissionId==='facility'
+      ? gameInstance.levelBuilder.gates.find(g=>g.id==='fac_gate_1'&&!g.isOpen)
+        ? 1 : (['meet_006','destroy_tanks','facility_exit'].includes(objective.id) &&
+          gameInstance.levelBuilder.gates.some(g=>g.id==='fac_gate_2'&&!g.isOpen))
+          ? 2 : 0
+      : 0;
+    view.textContent = facilityGatePending
+      ? 'ACESSO: ABRIR PORTA '+facilityGatePending+' DA FACILITY' + distance
+      : runwayGatePending
+        ? 'ACESSO: DESTRAVAR PORTÃO DA PISTA' + distance
+        : gatePending
+          ? 'ACESSO: ABRIR PORTÃO NORTE' + distance
+          : 'DIRETIVA: ' + (labels[objective.id] || objective.title) + distance;
   }
 
   const originalUpdate = game.update;
