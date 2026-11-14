@@ -96,8 +96,9 @@
 
     // Três anteparas com portões centrais de sete metros.
     for(const [i,z] of [9,-49,-107].entries()){
-      this.addBox(-14.5,2.2,z,16,4.4,.55,cabin,true);
-      this.addBox(14.5,2.2,z,16,4.4,.55,cabin,true);
+      // Painéis encontram o collider do portão sem brechas laterais.
+      this.addBox(-14.0,2.2,z,21,4.4,.55,cabin,true);
+      this.addBox(14.0,2.2,z,21,4.4,.55,cabin,true);
       const gateId='frigate_gate_'+(i+1);
       this.addSecurityGate(gateId,0,z,7,steel,gold);
       const keypad=new THREE.Mesh(new THREE.BoxGeometry(.4,.53,.2),blue.clone());
