@@ -92,7 +92,7 @@
         v(16,0,15),v(10,0,15),v(5.8,0,15),v(0,0,15),
         v(0,0,5),v(0,0,-10),v(0,0,-28),v(0,0,-42),
         v(0,0,-57),v(0,0,-75),v(0,0,-89),v(0,0,-102),
-        v(0,0,-118),v(0,0,-134)
+        v(0,0,-118),v(0,0,-138)
       ]
     };
     const st=this.bunker2State;
@@ -392,9 +392,6 @@
     if(!st.freed||!st.natalya||st.natalya.dead||st.natalya.health<=0)return false;
     const exit=game.levelBuilder.interactables.find(i=>i.id==='b2_escape_with_natalya');
     return !!exit&&st.natalya.position.distanceTo(exit.position)<=4.8;
-  }
-  function progressText(st){
-    return st.records.personnel?'FUNCIONÁRIOS ✓':'FUNCIONÁRIOS —';
   }
   const oldInteract=GAME.interact;
   GAME.interact=function(){
