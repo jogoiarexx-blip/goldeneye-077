@@ -84,8 +84,8 @@
         </div>
       </div>
 
-      <!-- Campanha: oito missões, incluindo retorno a Severnaya (Surface 2) -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 mb-5">
+      <!-- Campanha: nove missões, incluindo fuga com Natalya (Bunker 2) -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-5">
         <button data-mission="dam" class="mission-btn px-3 py-2.5 rounded-xl border text-left transition-all bg-sky-500/20 border-sky-400/60 cursor-pointer">
           <div class="text-[10px] font-mono-tech text-sky-300">MISSÃO 01</div>
           <div class="text-xs font-extrabold text-white">DAM</div>
@@ -122,6 +122,11 @@
           <div class="text-[10px] font-mono-tech text-slate-400">MISSÃO 08</div>
           <div class="text-xs font-extrabold text-white">SURFACE 2</div>
           <div class="surface2-status text-[9px] mt-1 font-mono-tech text-amber-300">BLOQUEADA</div>
+        </button>
+        <button data-mission="bunker2" class="mission-btn px-3 py-2.5 rounded-xl border text-left transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.07] cursor-pointer" aria-label="Missão 09 Bunker 2">
+          <div class="text-[10px] font-mono-tech text-slate-400">MISSÃO 09</div>
+          <div class="text-xs font-extrabold text-white">BUNKER 2</div>
+          <div class="bunker2-status text-[9px] mt-1 font-mono-tech text-amber-300">BLOQUEADA</div>
         </button>
       </div>
 
@@ -266,6 +271,7 @@
 
     <div id="silo-countdown" class="hidden fixed top-28 right-4 z-20 px-3 py-2 rounded-xl bg-slate-950/90 border-2 border-emerald-500 font-mono-tech text-sm font-bold tracking-widest text-white tabular-nums pointer-events-none">EVACUAÇÃO 07:00</div>
     <div id="frigate-bomb-progress" class="hidden fixed top-28 right-4 z-20 px-3 py-2 rounded-xl bg-slate-950/95 border border-red-500 font-mono-tech text-sm font-bold text-red-200 tabular-nums pointer-events-none">DESARMANDO BOMBA: 0%</div>
+    <div id="bunker2-ally-status" class="hidden fixed top-28 left-4 z-20 px-3 py-2 rounded-xl bg-slate-950/90 border border-teal-400/65 font-mono-tech text-xs font-bold text-teal-200 tabular-nums pointer-events-none">NATALYA: ENCARCERADA</div>
     <!-- Banner de Pointer Lock -->
     <div id="pointer-lock-banner" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center pointer-events-auto cursor-pointer">
       <div class="px-6 py-4 rounded-2xl bg-slate-900/95 border border-sky-400/50 text-center shadow-2xl">
@@ -488,5 +494,6 @@
   <script src="src/silo-v1-6.js" defer></script>
   <script src="src/frigate-v1-7.js" defer></script>
   <script src="src/surface2-v1-8.js" defer></script>
+  <script src="src/bunker2-v1-9.js" defer></script>
 </body>
 </html>
