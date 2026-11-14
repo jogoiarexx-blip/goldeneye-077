@@ -298,7 +298,17 @@ assert.equal(blockedRunway.can(-22,20),false,
 const openRunway=runwayReach(true);
 assert.ok(openRunway.can(0,20),'Portão aberto precisa liberar corredor central');
 assert.ok(openRunway.can(0,-10),'Objetivo atrás do portão continua acessível');
-
+// Auditoria de objetivos e recursos, não só um ponto arbitrário na pista.
+for (const id of ['ignition_key', 'board_tank', 'runway_intel', 'runway_plane']) {
+ const item=level.interactables.find(p=>p.id===id);
+ assert.ok(item,'Objetivo/veículo ausente: '+id);
+ assert.ok(openRunway.can(item.position.x,item.position.z,Math.min(2.5,item.radius)),
+  'Objetivo inacessível com portão aberto: '+id);
+}
+for(const item of level.pickups) {
+ assert.ok(openRunway.can(item.position.x,item.position.z,1.7),
+  'Munição/colete inacessível: '+item.type+' @ '+item.position.x+','+item.position.z);
+}
 // Os objetos de coleta agora são modelos, e não simples caixas coloridas.
 const ammoIcon=level.pickups.find(p=>p.type==='ammo');
 const armorIcon=level.pickups.find(p=>p.type==='armor');
